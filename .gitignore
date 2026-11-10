@@ -1,0 +1,10 @@
+**/.venv/
+**/__pycache__/
+**/*.pyc
+**/output/
+**/build/
+**/dist/
+**/downloads/
+**/*.wad
+**/local-arduino.yaml
+esp32c3mini-oled0.42-72x40/firmware/PocketWorld/

@@ -1,0 +1,80 @@
+{
+  "maps": [
+    {
+      "t": "state",
+      "id": "oled-doom",
+      "v": 1,
+      "mode": 2,
+      "auto": false,
+      "lock": false,
+      "hp": 100,
+      "ammo": 50,
+      "map": 2,
+      "frames": 632,
+      "heap": 133872,
+      "oled": true,
+      "fault": false
+    },
+    {
+      "t": "state",
+      "id": "oled-doom",
+      "v": 1,
+      "mode": 2,
+      "auto": false,
+      "lock": false,
+      "hp": 100,
+      "ammo": 50,
+      "map": 3,
+      "frames": 744,
+      "heap": 125860,
+      "oled": true,
+      "fault": false
+    },
+    {
+      "t": "state",
+      "id": "oled-doom",
+      "v": 1,
+      "mode": 2,
+      "auto": false,
+      "lock": false,
+      "hp": 100,
+      "ammo": 50,
+      "map": 6,
+      "frames": 855,
+      "heap": 99288,
+      "oled": true,
+      "fault": false
+    },
+    {
+      "t": "state",
+      "id": "oled-doom",
+      "v": 1,
+      "mode": 2,
+      "auto": false,
+      "lock": false,
+      "hp": 100,
+      "ammo": 50,
+      "map": 8,
+      "frames": 967,
+      "heap": 187184,
+      "oled": true,
+      "fault": false
+    }
+  ],
+  "final": {
+    "t": "state",
+    "id": "oled-doom",
+    "v": 1,
+    "mode": 2,
+    "auto": false,
+    "lock": false,
+    "hp": 100,
+    "ammo": 50,
+    "map": 1,
+    "frames": 977,
+    "heap": 187000,
+    "oled": true,
+    "fault": false
+  },
+  "fire_verified": true
+}
