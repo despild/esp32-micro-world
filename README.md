@@ -15,8 +15,8 @@ git clone --recurse-submodules https://github.com/despild/esp32-micro-world.git
 Separate modules / 독립 모듈:
 
 - [esp32c3-doom](https://github.com/despild/esp32c3-doom): native, silent Doom / 보드 내부에서 실행하는 무음 Doom.
-- [esp32c3-arduboyzelda](https://github.com/despild/esp32c3-arduboyzelda): Arduboy adventure port preparation; not included in the playable firmware yet / Arduboy 모험 게임 포팅 준비 자료. 현재 실행 펌웨어에는 아직 미포함.
+- [esp32c3-arduboyzelda](https://github.com/despild/esp32c3-arduboyzelda): playable Pocket Quest experimental port, original replacement artwork and saved progress / 플레이 가능한 Pocket Quest 실험판. 자체 에셋·저장 기능을 포함하며 통합 펌웨어에서도 실행됩니다.
 
-The board folder includes source, a Windows controller and firmware binaries without game data. See its documentation for hardware, licenses and build instructions.
+The board folder includes source, a Windows controller and firmware binaries without Doom WAD data. See its documentation for hardware, licenses and build instructions.
 
-보드 폴더에는 소스, Windows 컨트롤러, 게임 데이터를 제외한 펌웨어가 들어 있습니다. 하드웨어·라이선스·빌드 방법은 해당 폴더 문서를 참고하세요.
+보드 폴더에는 소스, Windows 컨트롤러, Doom WAD 데이터를 제외한 펌웨어가 들어 있습니다. 하드웨어·라이선스·빌드 방법은 해당 폴더 문서를 참고하세요.

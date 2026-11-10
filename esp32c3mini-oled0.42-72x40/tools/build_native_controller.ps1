@@ -1,7 +1,8 @@
+param([string]$OutputDirectory='')
 $ErrorActionPreference='Stop'
 $projectRoot=Split-Path -Parent $PSScriptRoot
 $compiler=Join-Path $env:WINDIR 'Microsoft.NET/Framework64/v4.0.30319/csc.exe'
-$dest=Join-Path $projectRoot 'bin'
+$dest=if($OutputDirectory){[IO.Path]::GetFullPath($OutputDirectory)}else{Join-Path $projectRoot 'bin'}
 New-Item -ItemType Directory -Path $dest -Force | Out-Null
 $source=Join-Path $projectRoot 'controller\native\PocketWorld.cs'
 $manifest=Join-Path $projectRoot 'controller\native\app.manifest'

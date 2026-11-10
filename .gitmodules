@@ -1,3 +1,6 @@
 [submodule "esp32c3mini-oled0.42-72x40/modules/doom"]
 	path = esp32c3mini-oled0.42-72x40/modules/doom
 	url = https://github.com/despild/esp32c3-doom.git
+[submodule "esp32c3mini-oled0.42-72x40/modules/arduboy"]
+	path = esp32c3mini-oled0.42-72x40/modules/arduboy
+	url = https://github.com/despild/esp32c3-arduboyzelda.git

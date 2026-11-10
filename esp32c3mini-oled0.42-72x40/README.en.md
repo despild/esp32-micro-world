@@ -2,7 +2,7 @@
 
 [한국어](README.md) · [User guide](USER_GUIDE.en.md)
 
-**Pets, a mini dungeon and the actual Doom engine run on an ESP32-C3 with a 72×40 monochrome OLED.** The Windows controller sends input and settings. Its optional live view enlarges framebuffer readback from the board.
+**Pets, a mini dungeon, the actual Doom engine and an Arduboy adventure run on an ESP32-C3 with a 72×40 monochrome OLED.** The Windows controller sends input and settings. Its optional live view enlarges framebuffer readback from the board.
 
 ## Quick start
 
@@ -20,11 +20,13 @@ A fresh board requires firmware and separate Doom data. Follow the [user guide](
 | Original mini dungeon: enemies, keys and floors | Runs on the board |
 | Silent original Doom, E1M1–E1M9 | Runs on the board; PC sends controls |
 | Windows lock detection | Autonomous life on lock, selected game on unlock |
-| Live view toggle | Available in controller 0.2.1 |
+| Live view toggle | Available in controller 0.3.0 |
 | Doom clean view | Wall boundaries, sprite/weapon outlines, quieter floors and reduced weapon bob |
-| Arduboy Zelda-style adventure | [Separate preparation repository](https://github.com/despild/esp32c3-arduboyzelda); not included in current firmware |
+| Arduboy Zelda-style adventure | [Pocket Quest experimental port](https://github.com/despild/esp32c3-arduboyzelda); original replacement art, inventory/map and NVS saves |
 
-The current dungeon button launches our mini game, not NES Zelda or an Arduboy game. The bottom-center Doom object is the player's weapon. Firing and weapon-change animations are retained. Small text and distant enemies remain difficult to distinguish at 72×40.
+The dungeon button launches the original mini game. **Arduboy · 포켓 퀘스트 (Pocket Quest)** launches the separate Ardynia-based adventure with new artwork. It is not Nintendo Zelda or an NES emulator. The bottom-center Doom object is the player's weapon. Firing and weapon-change animations are retained. Small text and distant enemies remain difficult to distinguish at 72×40.
+
+![Controller 0.3.0](verification/controller-arduboy.png)
 
 ## Hardware
 
@@ -42,16 +44,17 @@ Check the pinout before flashing another board. See the [Doom module](https://gi
 | `controller/native/` | Primary C# WinForms source and application manifest |
 | `controller/*.py` | Alternative Python/Tk controller for source execution |
 | `firmware/PocketWorldHooks.h` | Original pet and mini-dungeon code |
-| `modules/doom/` | Independent Git repository pinned as a submodule |
+| `modules/doom/` | Independent Doom repository pinned as a submodule |
+| `modules/arduboy/` | Independent Pocket Quest repository pinned as a submodule |
 | `bin/` | Controller, firmware, build metadata and SHA256 hashes |
 | `tools/` | Assembly, build and hardware verification tools |
 | `verification/` | Real-board results and a controller screenshot |
 
-`firmware/PocketWorld/` is generated, untracked build input. Edit the source Hook or Doom module instead.
+`firmware/PocketWorld/` is generated, untracked build input. Edit the source Hook or corresponding module instead.
 
 ## Build from source
 
-Initialize the submodule from the repository root, then enter this board folder:
+Initialize both submodules from the repository root, then enter this board folder:
 
 ```powershell
 git submodule update --init --recursive
@@ -67,7 +70,9 @@ Firmware builds require Arduino CLI and Espressif Arduino core **3.1.1**. Use `-
 
 ## Verification and distribution
 
-Real-board tests on 2026-11-10 checked loading all nine Doom maps, movement/fire, lock/unlock and input timeouts. Visibility changes were rechecked with turning, firing and E1M2/3/6/8. Controller 0.2.1 was checked for stopped frame packets while live view was off, continued game frames, and restored readback after re-enabling it. This is not a complete game playthrough. The automated WTS test injects notifications into the app's own window; it does not lock the PC.
+On 2026-11-10 the Arduboy port passed movement, room transitions, sword pickup/attack, inventory and save restoration after reboot. The new integrated firmware passed all four mode switches, Doom firing, heartbeat timeout and lock/pause. [Gameplay results](verification/arduboy-gameplay.json) · [Integration results](verification/arduboy-integration.json).
+
+Earlier Doom builds were checked for loading all nine Doom maps, movement/fire, lock/unlock and input timeouts. Visibility changes were rechecked with turning, firing and E1M2/3/6/8. Controller 0.3.0 passed stopped frame packets while live view was off, continued adventure frames, and restored readback after re-enabling it. This is not a complete game playthrough. The automated WTS test injects notifications into the app's own window; it does not lock the PC.
 
 The primary app uses ordinary .NET packaging instead of a Python bundler. It has no extracting launcher, global keyboard hook, network access or administrator request. It is unsigned, and acceptance by every antivirus product is not guaranteed. Keep security software enabled and record any detection name and file hash. SHA256 hashes are in [BUILD_INFO.json](bin/BUILD_INFO.json).
 

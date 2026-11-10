@@ -19,8 +19,8 @@ using System.Windows.Forms;
 [assembly: AssemblyDescription("Local USB controller for ESP32-C3 OLED games")]
 [assembly: AssemblyProduct("Pocket World")]
 [assembly: AssemblyCompany("Pocket World Project")]
-[assembly: AssemblyVersion("0.2.1.0")]
-[assembly: AssemblyFileVersion("0.2.1.0")]
+[assembly: AssemblyVersion("0.3.0.0")]
+[assembly: AssemblyFileVersion("0.3.0.0")]
 
 namespace PocketWorld {
     sealed class OledView : Control {
@@ -46,6 +46,8 @@ namespace PocketWorld {
         readonly ComboBox stage=new ComboBox(),portChoice=new ComboBox();
         readonly CheckBox clean=new CheckBox();
         readonly CheckBox live=new CheckBox();
+        readonly Label controlsHint=new Label(),secondaryHint=new Label();
+        Button newGameButton,saveAdventureButton;
         readonly List<Button> modes=new List<Button>();
         readonly HashSet<Keys> keys=new HashSet<Keys>();
         readonly JavaScriptSerializer json=new JavaScriptSerializer();
@@ -55,7 +57,8 @@ namespace PocketWorld {
         SerialPort serial;
         bool connecting,ready,locked,previewAuto,wtsRegistered,verifying;
         volatile bool closing;
-        int mode=2,gamma=50,dither=15,light=150,receivedFrames,wireFrames;
+        int mode=3,gamma=50,dither=15,light=150,receivedFrames,wireFrames;
+        bool ardSupported;
         long nextConnect,lastHello,lastKey,lastState;
         string requestedPort="자동";
         Dictionary<string,object> boardState;
@@ -83,7 +86,7 @@ namespace PocketWorld {
             var head=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2};head.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,55));head.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,45));
             head.Controls.Add(Label("POCKET WORLD",22,Fg),0,0);StyleLabel(connection,"● 보드 연결 대기",Muted);connection.Anchor=AnchorStyles.Right;head.Controls.Add(connection,1,0);root.Controls.Add(head,0,0);
             root.Controls.Add(Label("작은 세계는 보드 안에서. PC에서는 선택하고, 조작하세요.",10,Muted),0,1);
-            var content=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2};content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));content.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,280));root.Controls.Add(content,0,2);
+            var content=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2};content.ColumnStyles.Add(new ColumnStyle(SizeType.Percent,100));content.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute,300));root.Controls.Add(content,0,2);
             var left=new TableLayoutPanel {Dock=DockStyle.Fill,Padding=new Padding(18),BackColor=PanelBg,ColumnCount=1,RowCount=7,Margin=new Padding(0,10,18,0)};
             left.RowStyles.Add(new RowStyle(SizeType.Absolute,34));left.RowStyles.Add(new RowStyle(SizeType.Percent,100));left.RowStyles.Add(new RowStyle(SizeType.Absolute,34));left.RowStyles.Add(new RowStyle(SizeType.Absolute,32));left.RowStyles.Add(new RowStyle(SizeType.Absolute,34));left.RowStyles.Add(new RowStyle(SizeType.Absolute,54));left.RowStyles.Add(new RowStyle(SizeType.Absolute,95));
             var previewHeader=new TableLayoutPanel {Dock=DockStyle.Fill,ColumnCount=2,Margin=new Padding(0)};
@@ -92,17 +95,18 @@ namespace PocketWorld {
             live.Text="라이브 뷰";live.Checked=true;live.AutoSize=true;live.Anchor=AnchorStyles.Right;
             live.CheckedChanged+=(s,e)=>{view.Readback=live.Checked;view.Pixels=null;Send("MIRROR "+(live.Checked?1:0));view.Invalidate();view.Focus();};
             previewHeader.Controls.Add(live,1,0);left.Controls.Add(previewHeader,0,0);view.Dock=DockStyle.Fill;left.Controls.Add(view,0,1);
-            StyleLabel(status,"DOOM · 원작 플레이",Accent);left.Controls.Add(status,0,2);StyleLabel(metrics,"체력 —    탄약 —    맵 —",Muted);left.Controls.Add(metrics,0,3);
-            left.Controls.Add(Label("방향키 이동/회전   Ctrl 공격   Space 문/확인",10,Fg),0,4);
-            left.Controls.Add(Label("Q/E 옆걸음   Enter 메뉴   Tab 지도\n화면을 클릭한 뒤 조작하세요. 다른 창에서는 입력하지 않습니다.",9,Muted),0,5);
+            StyleLabel(status,"Arduboy · 포켓 퀘스트",Accent);left.Controls.Add(status,0,2);StyleLabel(metrics,"체력 —    열쇠 —    지역 —",Muted);left.Controls.Add(metrics,0,3);
+            StyleLabel(controlsHint,"방향키 이동   Ctrl 검/확인   Space 아이템",Fg);left.Controls.Add(controlsHint,0,4);
+            StyleLabel(secondaryHint,"Enter/Tab 장비·지도   Ctrl 길게: 장비\n화면을 클릭한 뒤 조작하세요. 다른 창에서는 입력하지 않습니다.",Muted);secondaryHint.Font=new Font(Font.FontFamily,9);left.Controls.Add(secondaryHint,0,5);
             log.Multiline=true;log.ReadOnly=true;log.Dock=DockStyle.Fill;log.BackColor=Bg;log.ForeColor=Muted;log.BorderStyle=BorderStyle.None;log.ScrollBars=ScrollBars.Vertical;left.Controls.Add(log,0,6);content.Controls.Add(left,0,0);
             var right=new FlowLayoutPanel {Dock=DockStyle.Fill,FlowDirection=FlowDirection.TopDown,WrapContents=false,AutoScroll=true,Padding=new Padding(7,4,0,0)};content.Controls.Add(right,1,0);
             right.Controls.Add(Label("화면과 게임",12,Fg));
-            string[] names={"펫 · 함께 생활하기","던전 · 탐험하기","DOOM · 원작 플레이"};
-            for(int i=0;i<3;i++) {int m=i;var b=Button(names[i],()=>SelectMode(m));modes.Add(b);right.Controls.Add(b);} PaintMode();
+            string[] names={"펫 · 함께 생활하기","던전 · 탐험하기","DOOM · 원작 플레이","Arduboy · 포켓 퀘스트"};
+            for(int i=0;i<4;i++) {int m=i;var b=Button(names[i],()=>SelectMode(m));modes.Add(b);right.Controls.Add(b);} modes[3].Enabled=false;
             var row=new FlowLayoutPanel {Width=254,Height=42,Margin=new Padding(0,8,0,4)};
             stage.DropDownStyle=ComboBoxStyle.DropDownList;stage.ForeColor=Bg;stage.BackColor=Fg;stage.Width=92;for(int i=1;i<=9;i++)stage.Items.Add("E1M"+i);stage.SelectedIndex=0;row.Controls.Add(stage);
-            var start=Button("새 게임",()=>{SelectMode(2);Send("NEW "+(stage.SelectedIndex+1));});start.Width=150;start.Margin=new Padding(4,0,0,0);row.Controls.Add(start);right.Controls.Add(row);
+            newGameButton=Button("새 모험",()=>{if(mode==3)Send("ARD NEW");else{SelectMode(2);Send("NEW "+(stage.SelectedIndex+1));}});newGameButton.Width=150;newGameButton.Margin=new Padding(4,0,0,0);row.Controls.Add(newGameButton);right.Controls.Add(row);
+            saveAdventureButton=Button("모험 진행 저장",()=>{Send("ARD SAVE");Log("모험 아이템·클리어 진행을 저장했습니다. 재시작은 지역 입구에서 합니다.");});right.Controls.Add(saveAdventureButton);PaintMode();
             var care=new FlowLayoutPanel {Width=254,Height=42,Margin=new Padding(0,0,0,0)};
             string[] labels={"먹이","놀이","휴식"},commands={"FEED","PLAY","REST"};for(int i=0;i<3;i++){string c=commands[i];var b=Button(labels[i],()=>Send("PET "+c));b.Width=78;b.Margin=new Padding(0,2,4,2);care.Controls.Add(b);}right.Controls.Add(care);
             StyleLabel(lockStatus,"Windows 잠금 감지 준비",Accent);right.Controls.Add(lockStatus);
@@ -137,7 +141,7 @@ namespace PocketWorld {
         protected override void OnKeyUp(KeyEventArgs e) {keys.Remove(e.KeyCode);if(e.KeyCode==Keys.ControlKey){keys.Remove(Keys.LControlKey);keys.Remove(Keys.RControlKey);}base.OnKeyUp(e);}
         int KeyMask() {int n=0;if(!GameFocus||locked||previewAuto)return 0;foreach(Keys k in keys){int bit=KeyBit(k);if(bit>=0)n|=1<<bit;}return n;}
         void ClearKeys() {keys.Clear();Send("KEY 0");}
-        void PaintMode() {for(int i=0;i<modes.Count;i++){modes[i].BackColor=i==mode?Accent:Color.FromArgb(40,58,73);modes[i].ForeColor=i==mode?Bg:Fg;}}
+        void PaintMode() {for(int i=0;i<modes.Count;i++){modes[i].BackColor=i==mode?Accent:Color.FromArgb(40,58,73);modes[i].ForeColor=i==mode?Bg:Fg;}stage.Visible=mode!=3;if(newGameButton!=null){newGameButton.Text=mode==3?"새 모험":"새 게임";newGameButton.Width=mode==3?254:150;newGameButton.Margin=new Padding(mode==3?0:4,0,0,0);}if(saveAdventureButton!=null)saveAdventureButton.Visible=mode==3;controlsHint.Text=mode==3?"방향키 이동   Ctrl 검/확인   Space 아이템":"방향키 이동/회전   Ctrl 공격   Space 문/확인";secondaryHint.Text=(mode==3?"Enter/Tab 장비·지도   Ctrl 길게: 장비":"Q/E 옆걸음   Enter 메뉴   Tab 지도")+"\n화면을 클릭한 뒤 조작하세요. 다른 창에서는 입력하지 않습니다.";}
         void SelectMode(int m) {ClearKeys();mode=m;PaintMode();Send("MODE "+m);}
         void Log(string s) {if(log.Lines.Length>30)log.Clear();log.AppendText(DateTime.Now.ToString("HH:mm:ss")+"  "+s+Environment.NewLine);}
         void Send(string s) {if(!ready||serial==null)return;try{serial.Write(s+"\n");}catch(IOException){Disconnect();}catch(InvalidOperationException){Disconnect();}catch(TimeoutException){Disconnect();}}
@@ -178,11 +182,14 @@ namespace PocketWorld {
             if(m==null||!m.ContainsKey("t"))return;
             switch(Convert.ToString(m["t"])) {
                 case "hello":if(!m.ContainsKey("id")||Convert.ToString(m["id"])!="oled-doom"||!m.ContainsKey("v")||Convert.ToInt32(m["v"])!=1)return;
+                    ardSupported=m.ContainsKey("arduboy")&&Convert.ToBoolean(m["arduboy"]);modes[3].Enabled=ardSupported;if(mode==3&&!ardSupported)mode=2;PaintMode();
+                    bool standalone=m.ContainsKey("standalone_arduboy")&&Convert.ToBoolean(m["standalone_arduboy"]);for(int i=0;i<3;i++)modes[i].Enabled=!standalone;
                     ready=true;lastState=Now;connection.Text="● "+serial.PortName+" 연결됨";connection.ForeColor=Accent;
                     Send("MODE "+mode);ApplyLock();Send("MIRROR "+(live.Checked?1:0));Send("LIGHT "+light);Send("GAMMA "+gamma);Send("DITHER "+dither);Send("CLEAN "+(clean.Checked?1:0));Log("보드 연결 완료 · 네이티브 실행");break;
                 case "frame":wireFrames++;try{if(!live.Checked)break;var b=DecodeHex(Convert.ToString(m["hex"]));if(b!=null){view.Pixels=b;receivedFrames++;view.Invalidate();}}catch(FormatException){}break;
-                case "state":boardState=m;lastState=Now;status.Text=Convert.ToBoolean(m["auto"])?"자동 생활 중":new[]{"펫 · 생활","던전 · 탐험","DOOM · 원작 플레이"}[Math.Max(0,Math.Min(2,Convert.ToInt32(m["mode"])))];
-                    metrics.Text=String.Format("체력 {0}    탄약 {1}    E1M{2}    누적 {3} 프레임",m["hp"],m["ammo"],m["map"],m["frames"]);if(Convert.ToBoolean(m["fault"]))status.Text="보드 오류 · 로그 확인";break;
+                case "state":boardState=m;lastState=Now;status.Text=Convert.ToBoolean(m["auto"])?"자동 생활 중":new[]{"펫 · 생활","던전 · 탐험","DOOM · 원작 플레이","Arduboy · 포켓 퀘스트"}[Math.Max(0,Math.Min(3,Convert.ToInt32(m["mode"])))];
+                    if(Convert.ToInt32(m["mode"])!=3)metrics.Text=String.Format("체력 {0}    탄약 {1}    E1M{2}    누적 {3} 프레임",m["hp"],m["ammo"],m["map"],m["frames"]);if(Convert.ToBoolean(m["fault"]))status.Text="보드 오류 · 로그 확인";break;
+                case "ard":if(mode==3){metrics.Text=String.Format("체력 {0}/{1}   열쇠 {2}   {3}   방 {4},{5}",m["hp"],m["maxhp"],m["keys"],Convert.ToInt32(m["dungeon"])==0?"필드":"던전 "+m["dungeon"],m["rx"],m["ry"]);if(boardState!=null)boardState["frames"]=m["frames"];}break;
             }
         }
         async void Verify() {

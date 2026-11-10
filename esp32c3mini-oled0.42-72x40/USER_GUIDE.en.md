@@ -6,8 +6,8 @@
 
 1. Connect the ESP32-C3 OLED board using a USB data cable.
 2. Double-click `Start-Pocket-World.bat`, which launches `bin/PocketWorld.exe`.
-3. Wait for `COM… 연결됨` (connected). If needed, select the port in the USB dropdown at the bottom right.
-4. Choose **펫 (Pet) / 던전 (Dungeon) / DOOM**. Click the preview area to return keyboard focus to gameplay.
+3. Wait for `COM… 연결됨` (connected). If needed, select the port in the USB dropdown by scrolling down the right panel.
+4. Choose **펫 (Pet) / 던전 (Dungeon) / DOOM / Arduboy · 포켓 퀘스트 (Pocket Quest)**. Click the preview area to return keyboard focus to gameplay.
 
 The primary app uses Windows .NET Framework. It needs no Python installation, installer or administrator privileges. Close Arduino Serial Monitor and other serial apps; only one program can own the port.
 
@@ -21,7 +21,7 @@ Click **라이브 뷰 (Live view)** above the preview on the right.
 - Re-enabling displays fresh frames. The selection is reapplied after USB reconnection.
 - Starting a new app session resets the default to on.
 
-The current firmware already supports `MIRROR 0/1`; this controller feature does not require a firmware update.
+Live view uses `MIRROR 0/1`. The new Arduboy mode requires this release’s integrated firmware as well as the controller.
 
 ## 3. Controls
 
@@ -40,13 +40,15 @@ Game keys are sent only while the controller window is active. Switching to anot
 
 **Doom:** Select E1M1–E1M9 and click **새 게임 (New game)** to restart at that map. Audio is disabled. Saving stores a map-start checkpoint, not exact player positions and actor state.
 
-**Dungeon:** Defeat enemies, collect the key and reach the exit to advance a floor. This is the project's mini dungeon, separate from the planned Arduboy port.
+**Dungeon:** Defeat enemies, collect the key and reach the exit to advance a floor. This is the project's mini dungeon, separate from the Arduboy port.
+
+**Arduboy · Pocket Quest:** Arrows/WASD move, Ctrl/Z sword/confirm, Space equipped item, Enter/Tab inventory/map. Find the sword chest two rooms right of the start and approach from below. **모험 진행 저장 (Save adventure)** saves items and room progress; reboot resumes at the region entrance. **새 모험 (New adventure)** clears only this game’s save. A full playthrough of puzzles and bosses has not been verified.
 
 **Pet:** Use **먹이 (Feed), 놀이 (Play), 휴식 (Rest)**. Pet state, experience and best floor are stored in board NVS.
 
 ## 4. Windows lock and autonomous life
 
-Keep the app running. On Windows lock, Doom pauses and the pet moves autonomously. In mini-dungeon mode the board explores automatically. Unlocking returns to the selected mode. Lock detection works while the controller is minimized.
+Keep the app running. On Windows lock, Doom and the Arduboy adventure pause and the pet moves autonomously. In mini-dungeon mode the board explores automatically. Unlocking returns to the selected mode. Lock detection works while the controller is minimized.
 
 **자동 생활 미리보기 (Preview autonomous life)** lets you test the transition without locking Windows. Press again to return to manual control. Closing the app or losing commands for about 3.5 seconds also starts autonomous behavior if the board remains powered. If PC sleep removes USB power, the board turns off.
 

@@ -1,5 +1,6 @@
 #pragma once
 #define POCKET_WORLD_CUSTOM
+#include "src/arduboy/ArdAdventure.h"
 // Parent application only. The separate Doom repository has no pet/dungeon code.
 static Preferences worldStore;
 static int hunger=80,joy=80,xp=0,floorNo=1,bestFloor=1,health=6;
@@ -23,6 +24,9 @@ static void resetFloor() {
  for(int i=0;i<3;i++) enemyHp[i]=(floorNo%5==0?3:2);
 }
 inline void worldCommand(const char *command) {
+ if(!strcmp(command,"ARD NEW")) {ardNewGame();return;}
+ if(!strcmp(command,"ARD SAVE")) {ardSave();return;}
+ if(!strcmp(command,"ARD STATE")) {ardSendState();return;}
  if(!strcmp(command,"PET FEED")) {hunger=min(100,hunger+20);joy=min(100,joy+5);xp++;celebrateUntil=millis()+2000;}
  if(!strcmp(command,"PET PLAY")) {joy=min(100,joy+20);hunger=max(0,hunger-5);xp+=2;celebrateUntil=millis()+2000;}
  if(!strcmp(command,"PET REST")) {sleeping=!sleeping;health=6;}
@@ -99,7 +103,8 @@ static void drawPet(bool autonomous) {
 }
 inline void worldTick(int mode,bool autonomous) {
  if(millis()-lastNeeds>60000){lastNeeds=millis();hunger=max(0,hunger-1);joy=max(0,joy-1);if(sleeping)joy=min(100,joy+2);}
- if(millis()-lastWorldSave>60000){lastWorldSave=millis();worldSave();}
+ if(millis()-lastWorldSave>60000){lastWorldSave=millis();worldSave();ardSave();}
  memset(oled,0,360);
+ if(mode==3&&!autonomous){ardStep(keyMask);ardRender(oled);return;}
  if(mode==1){dungeonStep(keyMask,autonomous);drawDungeon();}else drawPet(autonomous);
 }

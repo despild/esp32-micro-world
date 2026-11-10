@@ -64,12 +64,13 @@ class Controller:
         self.logbox.pack(fill='both',expand=True,pady=(16,0))
         self.label(right,'화면과 게임',13).pack(anchor='w',pady=(0,10))
         self.modebuttons=[]
-        for mode,label in [(0,'펫 · 함께 생활하기'),(1,'던전 · 탐험하기'),(2,'DOOM · 원작 플레이')]:
+        for mode,label in [(0,'펫 · 함께 생활하기'),(1,'던전 · 탐험하기'),(2,'DOOM · 원작 플레이'),(3,'Arduboy · 포켓 퀘스트')]:
             btn=self.button(right,label,lambda m=mode:self.select_mode(m),mode==2);btn.pack(fill='x',pady=4);self.modebuttons.append(btn)
         self.label(right,'DOOM 스테이지',10,MUTED).pack(anchor='w',pady=(12,4))
         stage=tk.Frame(right,bg=BG);stage.pack(fill='x')
         self.stage=ttk.Combobox(stage,state='readonly',values=[f'E1M{i}' for i in range(1,10)],width=7,font=('Segoe UI',11));self.stage.current(0);self.stage.pack(side='left',ipady=6)
-        self.button(stage,'새 게임',self.new_game).pack(side='right')
+        self.new_button=self.button(stage,'새 게임',self.new_game);self.new_button.pack(side='right')
+        self.button(right,'모험 진행 저장',lambda:self.link.send('ARD SAVE')).pack(fill='x',pady=4)
         self.label(right,'펫 상호 작용',10,MUTED).pack(anchor='w',pady=(12,4))
         care=tk.Frame(right,bg=BG);care.pack(fill='x')
         for text,cmd in [('먹이','FEED'),('놀이','PLAY'),('휴식','REST')]:
@@ -92,9 +93,11 @@ class Controller:
     def select_mode(self,mode):
         self.clear_keys();self.mode=mode;self.link.mode=mode;self.link.send(f'MODE {mode}')
         for i,b in enumerate(self.modebuttons):b.configure(bg=ACCENT if i==mode else '#283a49',fg=BG if i==mode else FG)
+        self.new_button.configure(text='새 모험' if mode==3 else '새 게임')
         self.root.focus_set()
     def new_game(self):
-        self.select_mode(2);self.link.send(f'NEW {self.stage.current()+1}');self.log('새 게임: '+self.stage.get())
+        if self.mode==3:self.link.send('ARD NEW');self.log('새 모험을 시작합니다.')
+        else:self.select_mode(2);self.link.send(f'NEW {self.stage.current()+1}');self.log('새 게임: '+self.stage.get())
     def session_change(self,locked):
         self.locked=locked;self.apply_lock();self.log('Windows 잠금 → 자동 생활' if locked else 'Windows 잠금 해제 → 직접 조작')
     def toggle_auto(self):
@@ -144,13 +147,15 @@ class Controller:
             elif kind=='frame':self.show_frame(msg.get('hex',''))
             elif kind=='state':
                 self.last_state=time.monotonic()
-                names={0:'펫 · 생활',1:'던전 · 탐험',2:'DOOM · 원작 플레이'}
+                names={0:'펫 · 생활',1:'던전 · 탐험',2:'DOOM · 원작 플레이',3:'Arduboy · 포켓 퀘스트'}
                 name='자동 생활 · 게임 일시 정지' if msg.get('auto') else names.get(msg.get('mode'),'대기')
                 self.status.configure(text=name)
-                self.metrics.configure(text=f"체력 {msg.get('hp',0)}    탄약 {msg.get('ammo',0)}    E1M{msg.get('map',0)}    누적 {msg.get('frames',0)} 프레임")
+                if self.mode!=3:self.metrics.configure(text=f"체력 {msg.get('hp',0)}    탄약 {msg.get('ammo',0)}    E1M{msg.get('map',0)}    누적 {msg.get('frames',0)} 프레임")
                 if msg.get('fault'):self.status.configure(text='보드 오류 · 로그를 확인하세요')
                 elif not msg.get('oled',True):self.status.configure(text='OLED I²C 응답 없음 · 연결 확인 필요')
             elif kind=='error':self.log(msg['message'])
+            elif kind=='ard' and self.mode==3:
+                self.metrics.configure(text=f"체력 {msg['hp']}/{msg['maxhp']}    열쇠 {msg['keys']}    지역 {msg['dungeon']}    방 {msg['rx']},{msg['ry']}")
         if self.link.ready and self.last_state and time.monotonic()-self.last_state>5:
             self.connection.configure(text='● 보드 응답 지연',fg='#edb584')
         self.root.after(30,self.poll)
