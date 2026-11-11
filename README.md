@@ -1,8 +1,12 @@
 # ESP32 Micro World
 
-작은 OLED 보드에서 실행하는 게임과 펫, 그리고 PC 컨트롤러를 모은 프로젝트입니다.
+작은 OLED 보드에서 실행하는 게임과 펫, PC 컨트롤러, ESP32 하드웨어 프로젝트를 모은 저장소입니다.
 
-Games, pets and PC controllers for tiny ESP32 OLED boards.
+Games, pets, PC controllers and hardware projects for ESP32 boards.
+
+| Project / 프로젝트 | Documentation / 문서 |
+|---|---|
+| Equalization Tool · 휴대용 이퀄라이징 압력 측정기 | [조사 및 설계안](equalization-tool/README.md) · 호스 연결 센서, 버튼, BLE, 충전식 배터리, 전원 스위치 |
 
 | Board / 보드 | Documentation / 문서 |
 |---|---|
