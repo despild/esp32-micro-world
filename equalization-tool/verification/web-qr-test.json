@@ -1,0 +1,31 @@
+{
+  "time_utc": "2026-11-11T07:55:01.071990+00:00",
+  "status": {
+    "device": "ESP32-C3",
+    "ssid": "EQ-C3",
+    "ip": "192.168.4.1",
+    "uptime_ms": 80008,
+    "clients": 0,
+    "oled": true,
+    "ap": true,
+    "requests": 0,
+    "ap_started": true,
+    "channel": 6,
+    "hidden": 0,
+    "tx_power_qdbm": 44,
+    "config_error": 0
+  },
+  "WIFI": {
+    "payload": "WIFI:T:WPA;S:EQ-C3;P:eqtest32;;",
+    "framebuffer_decode": "PASS"
+  },
+  "URL": {
+    "payload": "http://192.168.4.1",
+    "framebuffer_decode": "PASS"
+  },
+  "http": {
+    "http_selftest": true,
+    "bytes": 313
+  },
+  "limits": "Framebuffer and loopback HTTP verified; phone camera and over-air browser require user test."
+}

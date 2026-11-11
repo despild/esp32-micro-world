@@ -16,17 +16,22 @@ BMP180은 절대압 센서이며 명시된 측정 범위는 300–1,100 hPa입�
 
 호스 포트도 없어 작은 밀폐 챔버, 케이블 관통부 밀봉, 호스 피팅을 추가해야 합니다. 이는 초기 화면/코드 실험에는 가능하지만 누설·수분·챔버 부피를 해결해야 하므로, 이번 호스형 기기에는 포트가 있는 센서를 우선 제안합니다. 센서 통기구에 접착제를 넣어 호스를 붙이는 방식은 피합니다.
 
+보유 부품으로 먼저 시험하려면 [BMP180 시제품 설계](bmp180-prototype.md)를 따릅니다. 챔버 구조, 양압·음압 계산, 영점 고정, 변환 시간에 맞춘 샘플링, 범위 초과와 습기 검증을 정리했습니다. 낮은 초기 구매비와 완성품의 내구성은 별도로 판단합니다.
+
 ## 후보 비교
 
 | 후보 | 비교할 측정 범위 | 전기적 연결 | 판단 |
 |---|---|---|---|
 | **CFSensor XGZP6897D** | 0–20 kPa 또는 ±10 kPa 옵션 | 3.3 V 구동 가능, I²C, 두 포트 | 저비용 시제품 우선 후보. 옵션·세대 확인 필수 |
+| **HX710B + 호스형 압력센서 모듈** | 흔한 판매 표기는 0–40 kPa, 음압 사양 미확인 | DOUT/PD_SCK, 10/40 SPS. 실제 모듈 전압 확인 | 추가 저가 시험 후보. 센서 품번·ADC 포화·교정 확인 필요 |
 | **Honeywell ABP2** | ±10 / ±25 kPa 옵션 | 3.3 V·I²C·두 바브 포트 옵션 | 습기에 대응하는 액체 매체 옵션을 선택할 수 있는 대안 |
 | **MPXV5010DP** | 0–10 kPa, 0–100 hPa | 5 V 전원, 아날로그 약 0.2–4.7 V | 호스 연결은 쉽지만 전압 변환·ADC 처리가 추가됨 |
 | **MPXV7002DP** | ±2 kPa, ±20 hPa | 5 V 전원, 아날로그 약 0.5–4.5 V | 이번 범용 후보보다 범위가 좁음 |
 | **Sensirion SDP810-500Pa** | ±0.5 kPa, ±5 hPa | 디지털 I²C, 호스형 | 정밀 저압 센서이나 제안 범위에 크게 못 미침 |
 
 사양 출처: [CFSensor V3.3](https://cfsensor.com/wp-content/uploads/2026/09/XGZP6897D-Pressure-Sensor-V3.3.pdf), [Honeywell ABP2](https://automation.honeywell.com/us/en/products/sensing-solutions/sensors/pressure-sensors/board-mount-pressure-amplified/basic-abp2-series-board-mount-pressure-sensor), [MPXV5010DP](https://www.st.com/resource/en/datasheet/mpxv5010dp.pdf), [MPXV7002DP](https://www.st.com/resource/en/datasheet/mpxv7002dp.pdf), [SDP800/810](https://sensirion.com/file/datasheet_sdp800-d/).
+
+HX710B는 ADC 칩 이름이며 압력 소자와 구분합니다. 양·음압 가능 여부, 국내 가격 예시, 40 SPS 제약, 교정 방법은 [HX710B 검토](hx710b-review.md)에 정리했습니다.
 
 ### XGZP6897D를 주문할 때
 
@@ -58,6 +63,8 @@ MPXV5010DP/7002DP는 위 표의 출력이 ESP32의 입력 허용전압을 넘을
 호스가 길거나 포집부·필터가 크면 응답과 사용감이 달라질 수 있습니다. 최종 호스·필터를 조립한 상태에서 누설 및 압력 변화 응답을 검증하고, 센서 포트에 호스의 당기는 힘이 직접 걸리지 않게 고정합니다.
 
 ## BLE와 보드 선택
+
+추가 요청에 따라 **ESP32의 Wi-Fi 접속점과 내부 웹서버**를 폰 연결의 우선 검토안으로 추가했습니다. 이 방식은 일반 브라우저를 사용하므로 아래 Web Bluetooth 제약과 별개입니다. QR은 네트워크 접속용과 웹 주소용을 구분합니다. [로컬 웹·QR 설계](web-connectivity.md)
 
 기존 ESP32-C3에는 Bluetooth LE 기능이 있어 별도 블루투스 모듈을 추가할 필요가 없습니다. BLE GATT로 압력·시간·상태를 보내는 구성을 제안합니다. [Espressif ESP32-C3 데이터시트](https://www.espressif.com/sites/default/files/documentation/esp32-c3_datasheet_en.pdf)
 

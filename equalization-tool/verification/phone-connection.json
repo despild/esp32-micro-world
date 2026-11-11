@@ -1,0 +1,29 @@
+{
+  "date": "2026-11-11",
+  "client": "Android Chrome; exact OS and Chrome versions not collected",
+  "ssid": "EQ-C3",
+  "url": "http://192.168.4.1",
+  "user_confirmed_wifi_association": true,
+  "initial_browser_error": "ERR_TOO_MANY_RETRIES",
+  "user_confirmed_resolution": "Chrome local network permission granted; web access succeeded",
+  "user_confirmed_phone_ok_button": true,
+  "observed_settings": {
+    "channel": 6,
+    "tx_power_qdbm": 44,
+    "clients": 1
+  },
+  "serial_observations_after_restoring_11_dbm": [
+    {"uptime_ms": 616585, "requests": 33},
+    {"uptime_ms": 621561, "requests": 38},
+    {"uptime_ms": 626562, "requests": 43},
+    {"uptime_ms": 631565, "requests": 48}
+  ],
+  "observation_method": "USB status only, without running HTTPTEST during these observations",
+  "result": "Real phone web access and approximately one request per second confirmed",
+  "limits": [
+    "Small OLED QR recognition by the phone camera not confirmed",
+    "Automatic captive portal launch not confirmed",
+    "Windows Wi-Fi discovery stayed negative despite phone association; it is not used as evidence of AP failure",
+    "Multiple radio settings changed before association; no single-variable cause established"
+  ]
+}

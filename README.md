@@ -6,7 +6,7 @@ Games, pets, PC controllers and hardware projects for ESP32 boards.
 
 | Project / 프로젝트 | Documentation / 문서 |
 |---|---|
-| Equalization Tool · 휴대용 이퀄라이징 압력 측정기 | [조사 및 설계안](equalization-tool/README.md) · 호스 연결 센서, 버튼, BLE, 충전식 배터리, 전원 스위치 |
+| Equalization Tool · 휴대용 이퀄라이징 압력 측정기 | [조사 및 설계안](equalization-tool/README.md) · [Wi-Fi 웹·OLED QR 실물 테스트](equalization-tool/firmware/WebQrTest/README.md) · BMP180/HX710B 비교, 버튼, 충전식 배터리 |
 
 | Board / 보드 | Documentation / 문서 |
 |---|---|
