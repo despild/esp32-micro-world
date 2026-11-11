@@ -7,6 +7,7 @@
   "initial_browser_error": "ERR_TOO_MANY_RETRIES",
   "user_confirmed_resolution": "Chrome local network permission granted; web access succeeded",
   "user_confirmed_phone_ok_button": true,
+  "user_confirmed_final_firmware_reconnection_after_reboot": true,
   "observed_settings": {
     "channel": 6,
     "tx_power_qdbm": 44,
