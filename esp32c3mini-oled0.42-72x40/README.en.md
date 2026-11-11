@@ -20,13 +20,17 @@ A fresh board requires firmware and separate Doom data. Follow the [user guide](
 | Original mini dungeon: enemies, keys and floors | Runs on the board |
 | Silent original Doom, E1M1–E1M9 | Runs on the board; PC sends controls |
 | Windows lock detection | Autonomous life on lock, selected game on unlock |
-| Live view toggle | Available in controller 0.3.0 |
+| Live view toggle | Available in controller 0.3.1 |
 | Doom clean view | Wall boundaries, sprite/weapon outlines, quieter floors and reduced weapon bob |
 | Arduboy Zelda-style adventure | [Pocket Quest experimental port](https://github.com/despild/esp32c3-arduboyzelda); original replacement art, inventory/map and NVS saves |
 
 The dungeon button launches the original mini game. **Arduboy · 포켓 퀘스트 (Pocket Quest)** launches the separate Ardynia-based adventure with new artwork. It is not Nintendo Zelda or an NES emulator. The bottom-center Doom object is the player's weapon. Firing and weapon-change animations are retained. Small text and distant enemies remain difficult to distinguish at 72×40.
 
-![Controller 0.3.0](verification/controller-arduboy.png)
+**2026-11-11 inventory fix:** Three slots remain browsable even with no secondary items. `-` means unowned and `B` means equipped; unowned gear cannot be equipped. Use Ctrl during gameplay for the sword. [Hardware input verification](verification/arduboy-inventory.json).
+
+![Inventory screen](verification/controller-inventory.png)
+
+![Controller 0.3.1](verification/controller-arduboy.png)
 
 ## Hardware
 

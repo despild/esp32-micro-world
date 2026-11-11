@@ -20,13 +20,17 @@
 | 자체 미니 던전, 적·열쇠·층 진행 | 보드에서 실행 |
 | 원작 Doom 무음 E1M1–E1M9 | 보드에서 실행, PC는 입력만 전송 |
 | Windows 잠금 감지 | 잠금 시 자동 생활, 해제 시 선택 게임 복귀 |
-| 라이브 뷰 켜기/끄기 | 컨트롤러 0.3.0에서 지원 |
+| 라이브 뷰 켜기/끄기 | 컨트롤러 0.3.1에서 지원 |
 | Doom 가시성 향상 | 벽 경계·적/무기 윤곽, 바닥 패턴 감소, 무기 흔들림 억제 |
 | Arduboy 젤다 스타일 모험 | [Pocket Quest 실험판](https://github.com/despild/esp32c3-arduboyzelda), 자체 그래픽·장비·지도·NVS 저장 지원 |
 
 ‘던전’은 자체 미니 게임이며, 새 **Arduboy · 포켓 퀘스트** 버튼으로 별도 모험을 실행합니다. Ardynia의 MIT 코드를 기반으로 자체 에셋을 사용합니다. 닌텐도 젤다나 NES 에뮬레이터는 아닙니다. Doom 화면 아래 중앙 요소는 플레이어의 무기이며, 발사·교체 동작은 유지합니다. 72×40에서는 작은 글자와 먼 적의 식별에 한계가 있습니다.
 
-![컨트롤러 0.3.0](verification/controller-arduboy.png)
+**2026-11-11 장비 화면 수정:** 보조 장비가 없어도 세 칸을 탐색할 수 있습니다. `-`는 미획득, `B`는 장착 중이며, 미획득 장비는 장착되지 않습니다. 검은 플레이 중 Ctrl로 사용합니다. [실물 입력 검증](verification/arduboy-inventory.json).
+
+![장비 화면](verification/controller-inventory.png)
+
+![컨트롤러 0.3.1](verification/controller-arduboy.png)
 
 ## 하드웨어
 

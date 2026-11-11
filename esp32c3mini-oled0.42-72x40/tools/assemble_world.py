@@ -1,6 +1,6 @@
 """Build the parent application around the independent GPL Doom module."""
 from pathlib import Path
-import shutil
+import shutil,sys
 ROOT=Path(__file__).resolve().parents[1]
 module=ROOT/'modules/doom'
 if not module.exists(): module=ROOT/'esp32c3-oled-doom'
@@ -10,7 +10,9 @@ if not adventure.exists(): adventure=ROOT/'esp32c3-arduboyzelda'
 dest=ROOT/'firmware/PocketWorld'
 dest.mkdir(parents=True,exist_ok=True)
 shutil.copytree(source/'src',dest/'src',dirs_exist_ok=True)
-shutil.copytree(adventure/'src',dest/'src/arduboy',dirs_exist_ok=True)
+sys.path.insert(0,str(adventure/'tools'))
+from stage_source import stage
+stage(dest/'src/arduboy')
 shutil.copy2(source/'partitions.csv',dest/'partitions.csv')
 sketch=(source/'OledDoom.ino').read_text()
 sketch=sketch.replace('static int selectedMode=2;','static int selectedMode=0;')

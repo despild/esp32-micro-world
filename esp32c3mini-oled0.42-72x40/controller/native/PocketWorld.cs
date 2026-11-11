@@ -19,8 +19,8 @@ using System.Windows.Forms;
 [assembly: AssemblyDescription("Local USB controller for ESP32-C3 OLED games")]
 [assembly: AssemblyProduct("Pocket World")]
 [assembly: AssemblyCompany("Pocket World Project")]
-[assembly: AssemblyVersion("0.3.0.0")]
-[assembly: AssemblyFileVersion("0.3.0.0")]
+[assembly: AssemblyVersion("0.3.1.0")]
+[assembly: AssemblyFileVersion("0.3.1.0")]
 
 namespace PocketWorld {
     sealed class OledView : Control {
@@ -62,6 +62,7 @@ namespace PocketWorld {
         long nextConnect,lastHello,lastKey,lastState;
         string requestedPort="자동";
         Dictionary<string,object> boardState;
+        Dictionary<string,object> adventureState;
         [DllImport("wtsapi32.dll",SetLastError=true)] static extern bool WTSRegisterSessionNotification(IntPtr h,int flags);
         [DllImport("wtsapi32.dll")] static extern bool WTSUnRegisterSessionNotification(IntPtr h);
         [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr h,int msg,IntPtr w,IntPtr l);
@@ -189,7 +190,10 @@ namespace PocketWorld {
                 case "frame":wireFrames++;try{if(!live.Checked)break;var b=DecodeHex(Convert.ToString(m["hex"]));if(b!=null){view.Pixels=b;receivedFrames++;view.Invalidate();}}catch(FormatException){}break;
                 case "state":boardState=m;lastState=Now;status.Text=Convert.ToBoolean(m["auto"])?"자동 생활 중":new[]{"펫 · 생활","던전 · 탐험","DOOM · 원작 플레이","Arduboy · 포켓 퀘스트"}[Math.Max(0,Math.Min(3,Convert.ToInt32(m["mode"])))];
                     if(Convert.ToInt32(m["mode"])!=3)metrics.Text=String.Format("체력 {0}    탄약 {1}    E1M{2}    누적 {3} 프레임",m["hp"],m["ammo"],m["map"],m["frames"]);if(Convert.ToBoolean(m["fault"]))status.Text="보드 오류 · 로그 확인";break;
-                case "ard":if(mode==3){metrics.Text=String.Format("체력 {0}/{1}   열쇠 {2}   {3}   방 {4},{5}",m["hp"],m["maxhp"],m["keys"],Convert.ToInt32(m["dungeon"])==0?"필드":"던전 "+m["dungeon"],m["rx"],m["ry"]);if(boardState!=null)boardState["frames"]=m["frames"];}break;
+                case "ard":adventureState=m;if(mode==3){metrics.Text=String.Format("체력 {0}/{1}   열쇠 {2}   {3}   방 {4},{5}",m["hp"],m["maxhp"],m["keys"],Convert.ToInt32(m["dungeon"])==0?"필드":"던전 "+m["dungeon"],m["rx"],m["ry"]);if(boardState!=null)boardState["frames"]=m["frames"];
+                    if(Convert.ToInt32(m["scene"])==3){controlsHint.Text="방향키 장비 탐색   Ctrl 선택   Enter/Tab 닫기";secondaryHint.Text=(Convert.ToInt32(m["items"])==0?"보조 장비를 아직 얻지 않았습니다. 검은 플레이 중 Ctrl로 사용합니다.":"B는 장착 중, -는 미획득 장비입니다. 미획득 장비는 선택할 수 없습니다.")+"\n오른쪽 지도는 방문한 방을 표시합니다.";}
+                    else{controlsHint.Text="방향키 이동   Ctrl 검/확인   Space 아이템";secondaryHint.Text="Enter/Tab 장비·지도   Ctrl 길게: 장비\n화면을 클릭한 뒤 조작하세요. 다른 창에서는 입력하지 않습니다.";}
+                }break;
             }
         }
         async void Verify() {
@@ -205,10 +209,17 @@ namespace PocketWorld {
             live.Checked=true;
             await Task.Delay(1000);
             bool mirrorResumed=wireFrames>stoppedAt&&view.Pixels!=null;
+            bool inventoryOpened=false;
+            if(mode==3&&adventureState!=null&&Convert.ToInt32(adventureState["scene"])==0){
+                Send("KEY 256");await Task.Delay(200);Send("ARD STATE");await Task.Delay(200);
+                inventoryOpened=Convert.ToInt32(adventureState["scene"])==3;
+                using(var shot=new Bitmap(Width,Height)){DrawToBitmap(shot,new Rectangle(0,0,Width,Height));shot.Save(Path.ChangeExtension(verifyPath,"inventory.png"));}
+                if(inventoryOpened){Send("KEY 256");await Task.Delay(200);Send("ARD STATE");await Task.Delay(200);}
+            }
             SendMessage(Handle,0x2b1,new IntPtr(7),IntPtr.Zero);bool lockOk=locked;
             SendMessage(Handle,0x2b1,new IntPtr(8),IntPtr.Zero);bool unlockOk=!locked;
             using(var shot=new Bitmap(Width,Height)){DrawToBitmap(shot,new Rectangle(0,0,Width,Height));shot.Save(Path.ChangeExtension(verifyPath,"png"));}
-            File.WriteAllText(verifyPath,json.Serialize(new {connected=ready,wts_registered=wtsRegistered,synthetic_lock=lockOk,synthetic_unlock=unlockOk,mirror_stopped=mirrorStopped,game_continued=gameContinued,mirror_resumed=mirrorResumed,frames=receivedFrames,state=boardState}),Encoding.UTF8);
+            File.WriteAllText(verifyPath,json.Serialize(new {connected=ready,wts_registered=wtsRegistered,synthetic_lock=lockOk,synthetic_unlock=unlockOk,mirror_stopped=mirrorStopped,game_continued=gameContinued,mirror_resumed=mirrorResumed,inventory_opened=inventoryOpened,frames=receivedFrames,state=boardState}),Encoding.UTF8);
             Close();
         }
         protected override void OnFormClosing(FormClosingEventArgs e) {closing=true;timer.Stop();Send("KEY 0");Send("LOCK 1");Disconnect();base.OnFormClosing(e);}

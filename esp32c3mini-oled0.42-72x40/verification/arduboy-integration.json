@@ -13,9 +13,9 @@
       "keys": 0,
       "sword": 1,
       "items": 0,
-      "scene": 0,
+      "scene": 3,
       "attack": 0,
-      "frames": 57,
+      "frames": 488,
       "tiles": [
         4,
         0,
@@ -46,6 +46,8 @@
         0,
         0
       ],
+      "menu_row": 0,
+      "equipped": 255,
       "entities": []
     },
     "board": {
@@ -78,9 +80,9 @@
       "keys": 0,
       "sword": 1,
       "items": 0,
-      "scene": 0,
+      "scene": 3,
       "attack": 0,
-      "frames": 62,
+      "frames": 492,
       "tiles": [
         4,
         0,
@@ -111,6 +113,8 @@
         0,
         0
       ],
+      "menu_row": 0,
+      "equipped": 255,
       "entities": []
     },
     "board": {
@@ -143,9 +147,9 @@
       "keys": 0,
       "sword": 1,
       "items": 0,
-      "scene": 0,
+      "scene": 3,
       "attack": 0,
-      "frames": 62,
+      "frames": 492,
       "tiles": [
         4,
         0,
@@ -176,6 +180,8 @@
         0,
         0
       ],
+      "menu_row": 0,
+      "equipped": 255,
       "entities": []
     },
     "board": {
@@ -188,7 +194,7 @@
       "hp": 100,
       "ammo": 45,
       "map": 1,
-      "frames": 482,
+      "frames": 481,
       "heap": 184876,
       "oled": true,
       "fault": false
@@ -208,9 +214,9 @@
       "keys": 0,
       "sword": 1,
       "items": 0,
-      "scene": 0,
+      "scene": 3,
       "attack": 0,
-      "frames": 62,
+      "frames": 492,
       "tiles": [
         4,
         0,
@@ -241,6 +247,8 @@
         0,
         0
       ],
+      "menu_row": 0,
+      "equipped": 255,
       "entities": []
     },
     "board": {
@@ -253,7 +261,7 @@
       "hp": 100,
       "ammo": 45,
       "map": 1,
-      "frames": 482,
+      "frames": 481,
       "heap": 184876,
       "oled": true,
       "fault": false
@@ -273,9 +281,9 @@
       "keys": 0,
       "sword": 1,
       "items": 0,
-      "scene": 0,
+      "scene": 3,
       "attack": 0,
-      "frames": 119,
+      "frames": 549,
       "tiles": [
         4,
         0,
@@ -306,6 +314,8 @@
         0,
         0
       ],
+      "menu_row": 0,
+      "equipped": 255,
       "entities": []
     },
     "board": {
@@ -318,7 +328,7 @@
       "hp": 2,
       "ammo": 0,
       "map": 0,
-      "frames": 482,
+      "frames": 481,
       "heap": 184876,
       "oled": true,
       "fault": false
@@ -338,9 +348,9 @@
       "keys": 0,
       "sword": 1,
       "items": 0,
-      "scene": 0,
+      "scene": 3,
       "attack": 0,
-      "frames": 325,
+      "frames": 755,
       "tiles": [
         4,
         0,
@@ -371,6 +381,8 @@
         0,
         0
       ],
+      "menu_row": 0,
+      "equipped": 255,
       "entities": []
     },
     "board": {
@@ -383,7 +395,7 @@
       "hp": 2,
       "ammo": 0,
       "map": 0,
-      "frames": 482,
+      "frames": 481,
       "heap": 184876,
       "oled": true,
       "fault": false
@@ -403,9 +415,9 @@
       "keys": 0,
       "sword": 1,
       "items": 0,
-      "scene": 0,
+      "scene": 3,
       "attack": 0,
-      "frames": 382,
+      "frames": 813,
       "tiles": [
         4,
         0,
@@ -436,6 +448,8 @@
         0,
         0
       ],
+      "menu_row": 0,
+      "equipped": 255,
       "entities": []
     },
     "board": {
@@ -448,7 +462,7 @@
       "hp": 2,
       "ammo": 0,
       "map": 0,
-      "frames": 482,
+      "frames": 481,
       "heap": 184876,
       "oled": true,
       "fault": false

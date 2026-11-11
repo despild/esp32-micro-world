@@ -1,15 +1,15 @@
 {
-  "date": "2026-11-10",
-  "controller_version": "0.3.0",
+  "date": "2026-11-11",
+  "controller_version": "0.3.1",
   "doom_module_revision": "dd3d4e073dc47bec3fca5e44a3bec616d71a1a9e",
-  "arduboy_module_revision": "7d338f36831d48c34762c46ad250a85189c11d82",
+  "arduboy_module_revision": "2a147e6e1ec3ffdea6084d4efe1b24dc9d36134c",
   "firmware": "Pocket World: pet, original mini dungeon, native Doom, Arduboy Pocket Quest with original replacement artwork",
   "hardware": "ESP32-C3 4MB; SSD1306 72x40 SDA5 SCL6",
   "toolchain": "Arduino ESP32 3.1.1; .NET Framework csc 4.0.30319",
   "assets": "No WAD included; firmware expects compatible data at 0x110000",
   "sha256": {
-    "bin/PocketWorld.exe": "6356ea98a2ef35cb3ac0b8f322e56bf5ff3ec09faee34f0c4f773c521abb1a5a",
-    "bin/firmware/PocketWorld.ino.bin": "a9cb7a46ae33e013d6e784b1369800741b8bdf2200ed1f3747a43bd9b2fe63f1",
+    "bin/PocketWorld.exe": "58218f23f8d93ddc4b45a1a6906332fe5821325538089c9f4e2e19997b5f4f83",
+    "bin/firmware/PocketWorld.ino.bin": "0191b6edcd524f21996c08801cfcc1f6ee436529639a77264f34dcece85d7fcb",
     "bin/firmware/PocketWorld.ino.bootloader.bin": "802cbee04f0a69866d591ae65d9a046106f78ccce9e1bdd4accc8eb2292dd373",
     "bin/firmware/PocketWorld.ino.partitions.bin": "a5c158c9d595921d7ba00c967cde7e023fb1b8652cc1f40bad14e5f0ca749ea0"
   }

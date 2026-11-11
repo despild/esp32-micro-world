@@ -46,6 +46,8 @@ Game keys are sent only while the controller window is active. Switching to anot
 
 **Pet:** Use **먹이 (Feed), 놀이 (Play), 휴식 (Rest)**. Pet state, experience and best floor are stored in board NVS.
 
+**Inventory:** Tap or hold the arrows to browse three slots. `-` means unowned and `B` means equipped. Having only the sword means there is no secondary item to equip; use Ctrl during gameplay for the sword. Ctrl/Enter equips an owned selection. On an unowned slot, Enter/Tab closes without changing equipment. The map on the right displays visited rooms.
+
 ## 4. Windows lock and autonomous life
 
 Keep the app running. On Windows lock, Doom and the Arduboy adventure pause and the pet moves autonomously. In mini-dungeon mode the board explores automatically. Unlocking returns to the selected mode. Lock detection works while the controller is minimized.
