@@ -1,0 +1,159 @@
+{
+  "time_utc": "2026-11-12T04:08:57.854431+00:00",
+  "sensor_connected": false,
+  "status": {
+    "device": "ESP32-C3",
+    "firmware": "equalization-1.1",
+    "boot": "58a928a0",
+    "revision": 1,
+    "ms": 713,
+    "ap": true,
+    "ip": "192.168.4.1",
+    "clients": 0,
+    "oled": true,
+    "adc_task": true,
+    "online": false,
+    "demo": true,
+    "zero_valid": false,
+    "gain_valid": false,
+    "calibrated": false,
+    "zero": 0.0,
+    "raw": null,
+    "pressure": null,
+    "flags": 1,
+    "job": "idle",
+    "collected": 0,
+    "result": "idle",
+    "dropped": 0,
+    "requests": 0,
+    "screen": 0
+  },
+  "oled_demo": "PASS: scrolling, HOLD, resume; raw/pressure remain null",
+  "usb_replies": "PASS: 30 complete STATUS + 5 complete FRAME replies",
+  "core_assertions": 25,
+  "qr_framebuffer": "PASS: Wi-Fi + web",
+  "menu_and_wifi_toggle": "PASS",
+  "http_loopback": [
+    {
+      "http_selftest": true,
+      "path": "/",
+      "bytes": 7289,
+      "expected": 7289
+    },
+    {
+      "http_selftest": true,
+      "path": "/api/status",
+      "bytes": 380,
+      "expected": 380
+    },
+    {
+      "http_selftest": true,
+      "path": "/api/samples",
+      "bytes": 601,
+      "expected": 601
+    }
+  ],
+  "final_status": {
+    "device": "ESP32-C3",
+    "firmware": "equalization-1.1",
+    "boot": "58a928a0",
+    "revision": 1,
+    "ms": 4120,
+    "ap": true,
+    "ip": "192.168.4.1",
+    "clients": 0,
+    "oled": true,
+    "adc_task": true,
+    "online": false,
+    "demo": true,
+    "zero_valid": false,
+    "gain_valid": false,
+    "calibrated": false,
+    "zero": 0.0,
+    "raw": null,
+    "pressure": null,
+    "flags": 1,
+    "job": "idle",
+    "collected": 0,
+    "result": "sensor_error",
+    "dropped": 0,
+    "requests": 3,
+    "screen": 0
+  },
+  "usb_reply_bytes": [
+    18,
+    64,
+    72,
+    73,
+    373,
+    374,
+    382,
+    383,
+    734
+  ],
+  "usb_packet_boundary_replies": [
+    64
+  ],
+  "binary_bytes": 1043296,
+  "binary_sha256": "3e8df35e666a666502c2ecbf41dfe034c511286687704719ed91d25d22719d09",
+  "result": "PASS",
+  "limits": [
+    "Sensor and physical buttons not connected; ADC timing, actual pressure and wiring untested.",
+    "QR decoded from OLED framebuffer; phone camera scan not verified.",
+    "HTTP verified on-device via TCP loopback. User separately confirmed the same web/OLED UI over Wi-Fi before USB diagnostic-only changes.",
+    "SELFTEST runs an isolated model, not a sensor emulator or live-graph data source.",
+    "Battery, charger, load-sharing and physical power switch remain unassembled and untested."
+  ],
+  "browser_tests": {
+    "result": "PASS",
+    "checks": [
+      "embedded gzip matches source",
+      "missing sensor shows continuously moving demo",
+      "periodic pulse/hold/release shape",
+      "demo samples never enter measurements",
+      "demo CSV blocked",
+      "demo pause/resume",
+      "sensor reconnect discards held demo without revision change",
+      "RAW before calibration",
+      "zero POST",
+      "reference POST",
+      "calibrated graph",
+      "gap notice",
+      "pause/resume",
+      "mobile/desktop layout",
+      "CSV contains only measurements",
+      "saturation stays live",
+      "sensor removal resumes demo",
+      "device disconnect suspends demo",
+      "device reboot",
+      "320-1280 layout and 44px controls",
+      "keyboard focus visible",
+      "pause announced as pressed",
+      "settings disclosure",
+      "OLED display POST"
+    ],
+    "pageErrors": []
+  },
+  "phone_confirmation": {
+    "date": "2026-11-12",
+    "platform": "Android Chrome",
+    "user_confirmed": true,
+    "observation": "User confirmed the moving sample waveform appears on both the web page and OLED.",
+    "user_reply": "웹과 OLED 모두 보여요",
+    "scope": "Confirmed firmware 1.1 UI before the final USB diagnostic-only changes; web assets and OLED rendering are unchanged. No additional phone confirmation after the last flash."
+  },
+  "build": {
+    "core": "esp32 3.1.1",
+    "fqbn": "esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashSize=4M",
+    "app_partition_bytes": 1048576,
+    "free_app_bytes": 5280,
+    "embedded_page_gzip_bytes": 7289,
+    "upload": "App only at 0x10000; esptool verified flash hash. Full backup verified before upload.",
+    "usb_diagnostics": "2048-byte TX queue and explicit pending-reply drain and separate short delimiter after CDC readiness; complete replies verified without resending menu commands."
+  },
+  "design_audit": {
+    "record": "impeccable-design.json",
+    "primary_findings": 0,
+    "advisory_findings": 1
+  }
+}

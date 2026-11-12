@@ -13,6 +13,7 @@
 #include "Display.h"
 #include "page.h"
 #include "CoreTests.h"
+#include "DemoPattern.h"
 
 static eq::Measurement measurement;
 static eq::Button buttonA,buttonB;
@@ -24,6 +25,7 @@ static uint8_t heldFrame[360];
 static float graphTop=5;
 static char bootId[9],serialLine[48];
 static unsigned serialLength=0,selection=0,refIndex=1;
+static bool serialPending=false;
 static uint32_t displayUntil=0,lastDisplay=0,webRequests=0;
 static const float refs[]={1,2,5,10};
 static const float scales[]={2,5,10,20,40};
@@ -56,7 +58,7 @@ static void httpProbe(void *argument){
       ++result.bytes;
     }
     if(!path)match=match&&result.bytes==sizeof(PAGE);
-    else match=json.indexOf(path==1?"\"firmware\":\"equalization-1.0\"":"\"samples\":[")>=0;
+    else match=json.indexOf(path==1?"\"firmware\":\"equalization-1.1\"":"\"samples\":[")>=0;
     result.ok=header.startsWith("HTTP/1.1 200")&&result.expected>0&&result.bytes==result.expected&&match;
   }
   client.stop();xQueueSend(probeQueue,&result,0);vTaskDelete(nullptr);
@@ -73,11 +75,12 @@ static void wifiOff(){dns.stop();server.stop();WiFi.softAPdisconnect(true);WiFi.
 static void number(String &s,float v,unsigned decimals=4){if(isfinite(v))s+=String(v,decimals);else s+="null";}
 static String statusJson(){
   String s;s.reserve(650);
-  s="{\"device\":\"ESP32-C3\",\"firmware\":\"equalization-1.0\",\"boot\":\"";s+=bootId;
+  s="{\"device\":\"ESP32-C3\",\"firmware\":\"equalization-1.1\",\"boot\":\"";s+=bootId;
   s+="\",\"revision\":";s+=measurement.revision;s+=",\"ms\":";s+=millis();
   s+=",\"ap\":";s+=apOk?"true":"false";s+=",\"ip\":\"192.168.4.1\",\"clients\":";s+=apOk?WiFi.softAPgetStationNum():0;
   s+=",\"oled\":";s+=oledOk?"true":"false";s+=",\"adc_task\":";s+=adcTaskOk?"true":"false";
   s+=",\"online\":";s+=measurement.online?"true":"false";
+  s+=",\"demo\":";s+=measurement.online?"false":"true";
   s+=",\"zero_valid\":";s+=measurement.zeroValid?"true":"false";
   s+=",\"gain_valid\":";s+=measurement.gainValid?"true":"false";
   s+=",\"calibrated\":";s+=measurement.calibrated()?"true":"false";
@@ -166,10 +169,22 @@ static void line(int x0,int y0,int x1,int y1){
   for(;;){pixel(x0,y0);if(x0==x1&&y0==y1)break;int e=2*err;if(e>=dy){err+=dy;x0+=sx;}if(e<=dx){err+=dx;y0+=sy;}}
 }
 static void graph(){
-  if(hold){memcpy(oled,heldFrame,sizeof(oled));for(int y=0;y<7;y++)for(int x=48;x<72;x++)pixel(x,y,false);text3(48,0,"HOLD");return;}
+  if(hold){memcpy(oled,heldFrame,sizeof(oled));for(int y=0;y<7;y++)for(int x=0;x<72;x++)pixel(x,y,false);text3(0,0,measurement.online?"HOLD":"DEMO HOLD");return;}
+  if(!measurement.online){
+    // Separate visual fallback: the ADC history, pressure and calibration stay missing.
+    text3(0,0,"DEMO NO SENSOR");if(apOk)text3(68,0,"W");
+    const uint32_t now=millis();
+    auto yOf=[](float percent){return 31-int(percent*.21f);};
+    line(0,9,0,32);line(0,32,71,32);
+    int previous=yOf(eq::demoPercentAt(now,cfg::graphMs));
+    for(int x=1;x<=70;++x){
+      const uint32_t age=(70-x)*cfg::graphMs/70;
+      const int y=yOf(eq::demoPercentAt(now,age));line(x-1,previous,x,y);previous=y;
+    }
+    text3(0,35,"A MENU");text3(40,35,"B HOLD");return;
+  }
   char label[24];
-  if(!measurement.online)text3(0,0,"NO SENSOR");
-  else if(measurement.currentFlags&eq::Saturated)text3(0,0,"ADC LIMIT");
+  if(measurement.currentFlags&eq::Saturated)text3(0,0,"ADC LIMIT");
   else if(measurement.calibrated()){const float p=measurement.currentPressure();if(isfinite(p))snprintf(label,sizeof(label),"%.2f KPA",p);else snprintf(label,sizeof(label),"WAIT");text3(0,0,label);}
   else{text3(0,0,measurement.zeroValid?"UNCAL RAW":"ZERO FIRST");}
   if(apOk)text3(68,0,"W");
@@ -191,7 +206,6 @@ static void graph(){
   auto yOf=[&](float v){return constrain(31-int((v-low)/(high-low)*21),10,31);};
   line(0,9,0,32);line(0,32,71,32);if(low<=0&&high>=0)for(int x=1;x<72;x+=3)pixel(x,yOf(0));
   for(int x=0;x<70;x++)if(isfinite(mins[x]))line(x+1,yOf(mins[x]),x+1,yOf(maxs[x]));
-  if(!measurement.online){text3(9,15,"CONNECT");text3(9,23,"HX710B");}
   text3(0,35,"A MENU");text3(40,35,"B HOLD");
 }
 static void menuDraw(const char *title,const char *const *items,unsigned count){
@@ -232,6 +246,7 @@ static void sendFrame(){
   for(uint8_t v:oled){Serial.write(hex[v>>4]);Serial.write(hex[v&15]);}Serial.println("\"}");
 }
 static void serialCommand(){
+  serialPending=true;
   if(!strcmp(serialLine,"STATUS"))Serial.println(statusJson());
   else if(!strcmp(serialLine,"FRAME"))sendFrame();
   else if(!strcmp(serialLine,"A")){buttonEvent(true,1);render();Serial.println(statusJson());}
@@ -248,6 +263,9 @@ static void serialCommand(){
   }
 }
 void setup(){
+  // Native USB's default 256-byte TX buffer is smaller than STATUS and FRAME.
+  // Keep complete diagnostic replies queued even while the Windows host stalls.
+  Serial.setTxBufferSize(2048);Serial.setTxTimeoutMs(250);
   Serial.begin(115200);snprintf(bootId,sizeof(bootId),"%08lx",(unsigned long)esp_random());
   displayInit();pinMode(cfg::buttonA,INPUT_PULLUP);pinMode(cfg::buttonB,INPUT_PULLUP);
   prefsOk=prefs.begin("eqtool",false);
@@ -258,12 +276,14 @@ void setup(){
   server.on("/api/status",HTTP_GET,[](){++webRequests;noCache();server.send(200,"application/json",statusJson());});
   server.on("/api/samples",HTTP_GET,sendSamples);server.on("/api/control",HTTP_POST,control);
   server.onNotFound([](){if(server.uri().startsWith("/api/"))server.send(404,"application/json","{\"error\":\"not found\"}");else{server.sendHeader("Location","http://192.168.4.1/");server.send(302,"text/plain","Open http://192.168.4.1");}});
-  wifiOn();render();Serial.println(statusJson());
+  wifiOn();render();Serial.println(statusJson());serialPending=true;
 }
 void loop(){
+  const bool wasOnline=measurement.online;
   AdcFrame f;
   if(adcQueue)while(xQueueReceive(adcQueue,&f,0)==pdTRUE){if(f.fault)measurement.fault(f.ms);else measurement.ingest(f.raw,f.ms,f.gap);}
   measurement.tick(millis());
+  if(wasOnline!=measurement.online)hold=false;
   if(measurement.saveGain){measurement.saveGain=false;if(!prefsOk||prefs.putFloat("gain",measurement.gain)!=sizeof(float))measurement.result="storage_error";}
   if(screen==Screen::Busy&&measurement.job==eq::Job::None)screen=Screen::Result;
   buttonEvent(true,buttonA.update(digitalRead(cfg::buttonA)==LOW,millis()));
@@ -271,9 +291,14 @@ void loop(){
   if(apOk){dns.processNextRequest();server.handleClient();}
   ProbeResult probe;
   if(probeQueue&&xQueueReceive(probeQueue,&probe,0)==pdTRUE){
+    serialPending=true;
     probeBusy=false;Serial.print("{\"http_selftest\":");Serial.print(probe.ok?"true":"false");Serial.print(",\"path\":\"");Serial.print(probePaths[probe.path]);Serial.print("\",\"bytes\":");Serial.print(probe.bytes);Serial.print(",\"expected\":");Serial.print(probe.expected);Serial.println("}");
   }
   while(Serial.available()){const char c=Serial.read();if(c=='\n'){serialLine[serialLength]=0;serialCommand();serialLength=0;}else if(c!='\r'&&serialLength<sizeof(serialLine)-1)serialLine[serialLength++]=c;}
+  // HWCDC may queue a reply while its USB connection check is transiently false.
+  // Drain, then send a separate short delimiter: Windows CDC can otherwise
+  // hold a reply ending exactly at a 64-byte USB packet boundary.
+  if(serialPending&&Serial){Serial.flush();Serial.println();Serial.flush();serialPending=false;}
   if(millis()-lastDisplay>=100){lastDisplay=millis();render();}
   delay(1);
 }

@@ -18,19 +18,33 @@ def main():
     args = parser.parse_args()
     OUT.mkdir(parents=True, exist_ok=True)
     result = {'time_utc': datetime.now(timezone.utc).isoformat(), 'sensor_connected': False}
+    report = OUT / 'results.json'
+    report.write_text(json.dumps({**result, 'result': 'RUNNING'}, indent=2), encoding='utf-8')
     with serial.Serial(args.port, 115200, timeout=.1, write_timeout=2) as ser:
         ser.dtr = True
         ser.rts = False
+        receive = bytearray()
+        reply_lengths = set()
         def request(command, key='device', timeout=10):
+            observed = []
             ser.write((command + '\n').encode())
             end = time.monotonic() + timeout
             while time.monotonic() < end:
-                try:
-                    msg = json.loads(ser.readline())
-                except (ValueError, UnicodeDecodeError):
-                    continue
-                if key in msg:
-                    return msg
+                receive.extend(ser.read(ser.in_waiting or 1))
+                while b'\n' in receive:
+                    line, _, tail = receive.partition(b'\n')
+                    receive[:] = tail
+                    observed.append(line.decode('utf-8', errors='replace'))
+                    try:
+                        msg = json.loads(line)
+                    except (ValueError, UnicodeDecodeError):
+                        continue
+                    if key in msg:
+                        reply_lengths.add(len(line) + 1)  # Includes CRLF, not the extra blank delimiter.
+                        return msg
+            report.write_text(json.dumps({**result, 'result': 'FAIL', 'command': command,
+                                         'observed_lines': observed,
+                                         'partial_response': receive.decode('utf-8', errors='replace')}, indent=2), encoding='utf-8')
             raise RuntimeError(f'No response to {command}')
 
         def frame(name):
@@ -44,16 +58,36 @@ def main():
             return enlarged
 
         result['status'] = request('STATUS')
-        assert result['status']['firmware'] == 'equalization-1.0'
+        assert result['status']['firmware'] == 'equalization-1.1'
         assert result['status']['adc_task'] and result['status']['oled']
         assert not result['status']['online'], 'This check expects the sensor to be disconnected'
-        assert result['status']['pressure'] is None
+        assert result['status']['demo'] is True
+        assert result['status']['pressure'] is None and result['status']['raw'] is None
         try:
             assert request('ALONG')['screen'] == 0
-            frame('graph-no-sensor')
+            first = frame('graph-no-sensor')
+            time.sleep(.7)
+            assert first.tobytes() != frame('graph-demo-moving').tobytes(), 'Demo must scroll'
+            request('B')
+            frozen = frame('graph-demo-held')
+            time.sleep(.7)
+            assert frozen.tobytes() == frame('graph-demo-held-again').tobytes(), 'HOLD must freeze demo'
+            request('B')
+            resumed = frame('graph-demo-resumed')
+            time.sleep(.7)
+            assert resumed.tobytes() != frame('graph-demo-running').tobytes(), 'Demo must resume'
+            result['oled_demo'] = 'PASS: scrolling, HOLD, resume; raw/pressure remain null'
+            # STATUS and FRAME exceed the native USB driver's old 256-byte TX
+            # buffer. Repeated complete replies catch truncation under host load.
+            for _ in range(30):
+                status = request('STATUS')
+                assert status['demo'] and status['raw'] is None and status['pressure'] is None
+            for _ in range(5):
+                assert len(bytes.fromhex(request('FRAME', 'frame')['frame'])) == 360
+            result['usb_replies'] = 'PASS: 30 complete STATUS + 5 complete FRAME replies'
             tests = request('SELFTEST', 'core_tests')
             assert tests['core_tests'] == 0, tests
-            result['core_assertions'] = 20
+            result['core_assertions'] = 25
             assert request('A')['screen'] == 1
             frame('menu')
             assert request('B')['screen'] == 2
@@ -86,7 +120,10 @@ def main():
                 result['http_loopback'].append(check)
             result['final_status'] = request('STATUS')
             assert result['final_status']['pressure'] is None
+            assert result['final_status']['raw'] is None and result['final_status']['demo'] is True
             assert result['final_status']['dropped'] == 0
+            result['usb_reply_bytes'] = sorted(reply_lengths)
+            result['usb_packet_boundary_replies'] = sorted(n for n in reply_lengths if n % 64 == 0)
         finally:
             ser.write(b'ALONG\n')
     image = ROOT / 'build/EqualizationTool/EqualizationTool.ino.bin'

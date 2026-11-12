@@ -3,8 +3,9 @@
 #include <new>
 #include <string.h>
 #include "Measurement.h"
+#include "DemoPattern.h"
 // USB-only deterministic tests on a separate object. Never feeds the live graph/ADC.
-// Return a failure bitmask (0 = all 20 assertions passed).
+// Return a failure bitmask (0 = all 25 assertions passed).
 static uint32_t runCoreTests(){
   uint32_t failures=0;unsigned index=0;
   auto check=[&](bool pass){if(!pass)failures|=uint32_t(1)<<index;++index;};
@@ -44,5 +45,11 @@ static uint32_t runCoreTests(){
   check(b.update(true,200)==0&&b.update(true,230)==0&&b.update(true,1030)==2&&b.update(false,1100)==0&&b.update(false,1130)==0);
   eq::Button wrap;wrap.update(true,0xfffffff0);wrap.update(true,15);
   check(wrap.update(true,815)==2);
+  check(eq::demoPercentAt(0)==0 && eq::demoPercentAt(600)==0 && eq::demoPercentAt(11000)==0);
+  check(eq::demoPercentAt(900)==74 && eq::demoPercentAt(9000)==70);
+  check(eq::demoPercentAt(12900)==eq::demoPercentAt(900));
+  check(eq::demoPercentAt(100,400)==eq::demoPercentAt(11700));
+  bool bounded=true;for(uint32_t t=0;t<eq::demoPeriodMs;t+=11){const float v=eq::demoPercentAt(t);bounded=bounded&&isfinite(v)&&v>=0&&v<=100;}
+  check(bounded);
   return failures;
 }

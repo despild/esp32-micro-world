@@ -4,7 +4,9 @@
 
 ## 화면과 메뉴
 
-전원을 켜면 **최근 6초 그래프**가 기본입니다. 실제 압력 교정 전에는 RAW 그래프, 센서 미연결이면 `NO SENSOR / CONNECT HX710B`를 표시합니다. 세로축 kPa 범위는 2/5/10/20/40 중 선택합니다. RAW 상태에서는 자동 범위입니다. OLED의 한 가로 픽셀에 들어오는 최솟값/최댓값을 함께 그려 짧은 피크를 보존합니다.
+전원을 켜면 **최근 6초 그래프**가 기본입니다. 실제 압력 교정 전에는 RAW 그래프, 센서 미연결이면 `DEMO NO SENSOR`와 움직이는 샘플 파형을 표시합니다. 세로축 kPa 범위는 실제 교정된 측정에 대해 2/5/10/20/40 중 선택합니다. RAW 상태에서는 자동 범위입니다. 실제 측정은 OLED의 한 가로 픽셀에 들어오는 최솟값/최댓값을 함께 그려 짧은 피크를 보존합니다.
+
+센서가 없을 때의 파형은 짧은 가압·유지·해제, 두 번 연속 가압, 긴 유지가 이어지는 **12초 반복 예시**입니다. 웹은 상대 압력(%)으로 최근 20초를 표시합니다. 실측이나 권장 압력이 아니며 현재 측정값은 계속 비어 있습니다. 샘플은 ADC 버퍼·교정·CSV에 들어가지 않습니다. B로 샘플 화면도 멈추거나 재개할 수 있고, 센서 연결/분리 시 멈춤을 해제해 바뀐 상태를 표시합니다. ADC 포화는 샘플 모드로 숨기지 않습니다. 웹에서 기기 연결이 끊기면 샘플도 중단됩니다.
 
 | 조작 | 그래프 화면 | 메뉴/다른 화면 |
 |---|---|---|
@@ -62,7 +64,7 @@ HX710B는 24비트 부호 있는 데이터를 읽고 **총 27 클럭**으로 압
 
 | API | 동작 |
 |---|---|
-| `GET /api/status` | 센서/교정/작업/Wi-Fi 상태, 부팅 ID, revision |
+| `GET /api/status` | 센서/교정/작업/Wi-Fi 상태, 부팅 ID, revision, `demo` 표시 여부 |
 | `GET /api/samples?after=0&boot=...&revision=...` | `status`, `samples`, `next`, `more`, `lost`. 새 부팅/새 revision은 버퍼부터 재동기화 |
 | `POST /api/control` | URL-encoded `action=zero`, `action=calibrate&kpa=2`, `action=display` |
 
@@ -85,14 +87,20 @@ python equalization-tool/tools/verify_equalization_device.py --port COM4
 
 기존 factory 앱 영역 **0x10000 / 1 MiB**를 유지합니다. 빌드 결과가 이 영역을 넘으면 도구가 업로드를 거절합니다. 전체 erase, 파티션 변경, bootloader/NVS/WAD 덮어쓰기는 하지 않습니다. Arduino IDE의 일반 업로드 대신 이 저장소의 확인 도구를 사용하세요. 새 보드에 설치할 때는 해당 보드에 맞는 파티션/부트로더 설치 절차가 별도로 필요합니다.
 
-`web/index.html`이 웹 UI 원본이고 `tools/embed_web.py`가 gzip으로 압축한 `page.h`를 생성합니다. HTTP `Content-Encoding: gzip`으로 전달해 기존 앱 영역 안에 넣습니다. 원본 변경 후 다시 생성합니다. QR 비트맵은 동작 확인된 `WebQrTest`와 같습니다. 기존 `WebQrTest`는 연결 문제 진단용으로 보존했습니다.
+`MinimalBootReport.cpp`는 고정한 Arduino ESP32 3.1.1의 선택적 상세 부팅 보고서 두 진입점을 비워, 사용하지 않는 주변장치 진단 코드가 정적 링크되는 것을 막습니다. 측정·웹·USB 진단 명령은 유지합니다. 코어 버전을 바꿀 때는 이 파일과 링크 결과를 다시 확인하세요. USB 진단 응답은 기본 256-byte 버퍼보다 길기 때문에 송신 버퍼를 2,048 bytes로 설정하고, USB 연결 준비를 확인한 뒤 대기 중인 응답과 별도의 짧은 구분 줄을 전송합니다. 정확히 64바이트 USB 패킷 경계에서 끝나는 응답도 Windows에서 바로 수신하도록 합니다. 다음 명령이 와야 이전 응답이 전달되는 현상을 막기 위한 진단 경로 보완입니다.
 
-USB 115200 명령: `STATUS`, `FRAME`, `A`, `B`, `ALONG`, `BLONG`, `HTTPTEST /`, `HTTPTEST /api/status`, `HTTPTEST /api/samples`, `SELFTEST`. A/B 명령은 물리 버튼과 같은 메뉴 처리 경로를 호출합니다. SELFTEST는 별도의 모델 객체에서 20개 결정적 검증을 실행하며 실제 데이터 스트림에 가상값을 넣지 않습니다. 결과 0은 실패 비트가 없다는 뜻입니다.
+`web/index.html`이 웹 UI 원본이고 `tools/embed_web.py`가 gzip으로 압축한 `page.h`를 생성합니다. 같은 도구가 `demo-pattern.json`에서 OLED의 `DemoPattern.h`와 웹의 패턴 상수를 생성하므로 표시 파형은 한 곳에서 관리합니다. HTTP `Content-Encoding: gzip`으로 전달해 기존 앱 영역 안에 넣습니다. 원본 변경 후 다시 생성합니다. QR 비트맵은 동작 확인된 `WebQrTest`와 같습니다. 기존 `WebQrTest`는 연결 문제 진단용으로 보존했습니다.
+
+USB 115200 명령: `STATUS`, `FRAME`, `A`, `B`, `ALONG`, `BLONG`, `HTTPTEST /`, `HTTPTEST /api/status`, `HTTPTEST /api/samples`, `SELFTEST`. A/B 명령은 물리 버튼과 같은 메뉴 처리 경로를 호출합니다. SELFTEST는 별도의 모델 객체와 표시 파형 함수에서 25개 결정적 검증을 실행하며 실제 데이터 스트림에 가상값을 넣지 않습니다. 결과 0은 실패 비트가 없다는 뜻입니다.
 
 브라우저 검증: `PLAYWRIGHT_MODULE`에 Playwright 경로, 필요 시 `BROWSER_EXE`를 지정하고 `node equalization-tool/tools/test_web.cjs`. 모의 전송으로 오류·교정·재접속·CSV·반응형 화면을 검사하며 실제 압력센서 시험을 대신하지 않습니다.
 
-실제 검증 결과는 [검증 기록](../../verification/equalization-firmware.json)에 기록합니다. 센서·버튼 물리 배선, 압력 정확도, 노이즈, 최종 배터리 회로, 카메라 QR 인식은 조립 후 확인해야 합니다.
+실제 1.1 검증 결과는 [검증 기록](../../verification/equalization-demo-1.1.json)에 기록합니다. 센서·버튼 물리 배선, 압력 정확도, 노이즈, 최종 배터리 회로, 카메라 QR 인식은 조립 후 확인해야 합니다.
 
-2026-11-12 최종 앱 1,047,584 bytes / 1,048,576 bytes, 여유 992 bytes. 업로드 후 flash hash 일치를 확인했습니다. 실제 보드의 20개 모델/버튼 처리 검증, 메뉴·Wi-Fi ON/OFF, QR 프레임버퍼 디코딩, 3개 HTTP 경로의 전체 응답 전송을 확인했습니다. 웹은 모의 전송 테스트 13개를 통과했고 사용자가 최종 Android Chrome 그래프 화면을 확인했습니다. 이는 실제 센서 정확도 시험 결과가 아닙니다.
+현재 **1.1**은 앱 1,043,296 bytes / 1,048,576 bytes로 업로드했고 남은 앱 공간은 5,280 bytes입니다. Flash hash 일치, 보드 내부 검증 25개, OLED 샘플 이동·멈춤·재개, 완전한 USB 응답 35건, 메뉴·QR·Wi-Fi 전환·HTTP 3경로를 확인했습니다. 웹은 모의 전송 시나리오 24개를 통과했습니다. 사용자는 웹과 OLED에서 샘플 파형이 표시되는 것을 확인했으며, 마지막 USB 진단 보완 전후 화면 소스는 같습니다.
+
+실제 1.1 OLED 프레임버퍼: [샘플 그래프](../../verification/equalization-demo-images/oled-demo.png), [샘플 멈춤](../../verification/equalization-demo-images/oled-demo-held.png). 웹은 모의 전송으로 촬영한 [모바일](../../verification/equalization-demo-images/web-demo-mobile.png), [데스크톱](../../verification/equalization-demo-images/web-demo-desktop.png), [교정 설정](../../verification/equalization-demo-images/web-settings-mock.png) 화면입니다.
+
+이전 **1.0**은 2026-11-12에 앱 1,047,584 bytes / 1,048,576 bytes로 업로드하고 flash hash 일치를 확인했습니다. 당시 실제 보드의 20개 모델/버튼 처리 검증, 메뉴·Wi-Fi ON/OFF, QR 프레임버퍼 디코딩, 3개 HTTP 경로의 전체 응답 전송을 확인했습니다. 웹은 모의 전송 테스트 13개를 통과했고 사용자가 Android Chrome 그래프 화면을 확인했습니다. 이는 실제 센서 정확도 시험이나 1.1 샘플 화면에 대한 폰 확인 결과가 아닙니다.
 
 실제 OLED 프레임버퍼: [센서 대기 그래프](../../verification/equalization-images/graph-no-sensor.png), [메뉴](../../verification/equalization-images/menu.png). [웹 대기 화면](../../verification/equalization-images/web-no-sensor-mock.png)은 자동 브라우저 테스트의 모의 전송 스크린샷이며 휴대폰 캡처는 아닙니다.

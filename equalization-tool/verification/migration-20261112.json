@@ -1,0 +1,23 @@
+{
+  "date": "2026-11-12",
+  "source_project": "portfolio_page/.local/eq-sample",
+  "destination": "esp32-micro-world/equalization-tool",
+  "source_directory_removed": true,
+  "archived_files": 33,
+  "verification": "All 33 source files matched SHA-256 before removing the original directory. Original staging files retained under ignored output/migration-20261112.",
+  "imported": [
+    "demo-pattern.json",
+    "firmware/EqualizationTool/CoreTests.h",
+    "firmware/EqualizationTool/DemoPattern.h",
+    "firmware/EqualizationTool/EqualizationTool.ino",
+    "firmware/EqualizationTool/page.h",
+    "tools/embed_web.py",
+    "tools/test_web.cjs",
+    "web/index.html"
+  ],
+  "excluded_from_active_source": [
+    "local-arduino.yaml",
+    "build/"
+  ],
+  "notes": "Imported changes are completed in firmware 1.1; local build artifacts and machine-specific paths are not published."
+}

@@ -1,8 +1,35 @@
 """Embed the offline, dependency-free web UI into ESP32 program flash."""
 from pathlib import Path
 import gzip
+import json
+import re
 root = Path(__file__).resolve().parents[1]
-page = (root / 'web/index.html').read_text(encoding='utf-8')
+pattern = json.loads((root / 'demo-pattern.json').read_text(encoding='utf-8'))
+knots = pattern['points']
+period = pattern['periodMs']
+assert 0 < period < 65536 and knots[0] == [0, 0] and knots[-1] == [period, 0]
+assert all(0 <= value <= 100 for _, value in knots)
+assert all(a[0] < b[0] for a, b in zip(knots, knots[1:]))
+header = ('// Generated from demo-pattern.json by tools/embed_web.py. Display-only; never ADC data.\n'
+          '#pragma once\n#include <stdint.h>\nnamespace eq {\n'
+          f'constexpr uint32_t demoPeriodMs = {period};\n'
+          'constexpr uint16_t demoKnots[][2] = {' + ','.join('{%d,%d}' % tuple(p) for p in knots) + '};\n'
+          'inline float demoPercentAt(uint32_t now, uint32_t age=0) {\n'
+          '  const uint32_t phase=(now%demoPeriodMs+demoPeriodMs-age%demoPeriodMs)%demoPeriodMs;\n'
+          '  for(unsigned i=1;i<sizeof(demoKnots)/sizeof(demoKnots[0]);++i) {\n'
+          '    if(phase<=demoKnots[i][0]) {\n'
+          '      const auto &a=demoKnots[i-1], &b=demoKnots[i];\n'
+          '      return float(a[1])+(float(b[1])-a[1])*float(phase-a[0])/float(b[0]-a[0]);\n'
+          '    }\n  }\n  return 0;\n}\n}\n')
+(root / 'firmware/EqualizationTool/DemoPattern.h').write_text(header, encoding='utf-8')
+source = root / 'web/index.html'
+page = source.read_text(encoding='utf-8')
+payload = json.dumps({key: pattern[key] for key in ('id', 'periodMs', 'points')}, separators=(',', ':'))
+page, replaced = re.subn(r'/\* DEMO_PATTERN_START \*/.*?/\* DEMO_PATTERN_END \*/',
+                        '/* DEMO_PATTERN_START */\nconst demoPattern = ' + payload + ';\n/* DEMO_PATTERN_END */',
+                        page, flags=re.DOTALL)
+assert replaced == 1, 'Missing or duplicated demo pattern marker in web/index.html'
+source.write_text(page, encoding='utf-8', newline='\n')
 compressed = gzip.compress(page.encode('utf-8'), compresslevel=9, mtime=0)
 target = root / 'firmware/EqualizationTool/page.h'
 rows = [','.join(f'0x{v:02x}' for v in compressed[i:i+20]) for i in range(0,len(compressed),20)]

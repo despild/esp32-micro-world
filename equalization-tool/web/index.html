@@ -1,42 +1,65 @@
 <!doctype html>
-<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101c22"><title>이퀄 · 실시간 압력</title>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f6f7f4"><title>이퀄 · 압력 모니터</title>
 <style>
-:root{color-scheme:dark;--bg:#0c151b;--panel:#13232b;--line:#28414a;--muted:#9eb5be;--mint:#73efc5;--warn:#ffd28a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eff9f8;font:15px/1.6 system-ui,sans-serif}main{max-width:1000px;margin:auto;padding:28px 20px 44px}header{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:20px;font-weight:750;letter-spacing:-.7px}.brand small{font-size:12px;font-weight:500;color:var(--muted);margin-left:10px}.pill{font-size:12px;border:1px solid var(--line);border-radius:30px;padding:5px 11px;color:var(--mint)}h1{font-size:15px;font-weight:500;color:var(--muted);margin:28px 0 0}.reading{font-size:64px;font-variant-numeric:tabular-nums;line-height:1.3;letter-spacing:-3px;font-weight:650;overflow-wrap:anywhere}.reading small{font-size:19px;letter-spacing:0;color:var(--muted);padding-left:12px}.note{color:var(--warn);min-height:26px;margin-bottom:22px}.panel{border:1px solid var(--line);border-radius:20px;background:var(--panel);padding:20px;margin-top:18px}.graph-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.graph-head strong{font-weight:600}select,input,button{font:inherit;color:inherit;background:#1a303a;border:1px solid #36515a;border-radius:10px;padding:9px 12px;min-height:44px}button{cursor:pointer}button:hover{border-color:var(--mint)}button:disabled{opacity:.4;cursor:default}button.primary{color:#0b2a23;background:var(--mint);border-color:var(--mint);font-weight:650}.canvas-wrap{position:relative;height:270px;margin-top:16px}canvas{width:100%;height:100%;display:block}#empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);pointer-events:none;text-align:center;padding:30px}.meta{display:flex;flex-wrap:wrap;gap:8px 24px;color:var(--muted);font-size:12px;margin-top:10px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}h2{font-size:17px;margin:0 0 10px}p{color:var(--muted);margin:8px 0 14px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:18px}.settings .panel{margin-top:0}label{display:block;font-size:13px;margin:12px 0 6px}input{width:100%;max-width:220px}details{margin-top:20px;color:var(--muted)}summary{cursor:pointer}#feedback{color:var(--mint);min-height:26px;overflow-wrap:anywhere}footer{color:var(--muted);font-size:12px;margin-top:22px}.step{color:var(--mint);font-size:11px;letter-spacing:2px}a{color:var(--mint)}@media(max-width:600px){main{padding:20px 14px 32px}.panel{padding:16px;border-radius:16px}.settings{grid-template-columns:1fr}.reading{font-size:50px;letter-spacing:-2px}.canvas-wrap{height:240px}.brand small{display:block;margin:0}.graph-head{align-items:flex-start}.graph-head select{max-width:150px;font-size:13px}}
+:root{color-scheme:light;--paper:#f6f7f4;--ink:#202923;--muted:#59645c;--line:#c4ccc5;--signal:#235e47;--warn:#995019;--focus:#215b93}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.6 system-ui,sans-serif}main{max-width:1040px;margin:auto;padding:32px 32px 24px}header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-bottom:20px;border-bottom:1px solid var(--ink)}h1{font-size:22px;font-weight:700;letter-spacing:-.02em;margin:0}h1 span{font-size:15px;font-weight:400;color:var(--muted);margin-left:12px}#connection{font-size:14px;white-space:nowrap;color:var(--muted)}.readout{display:flex;align-items:center;justify-content:space-between;gap:32px;padding:24px 0}.reading{display:flex;align-items:baseline;gap:12px;white-space:nowrap;font-variant-numeric:tabular-nums}.reading .label{font-size:14px;color:var(--muted)}#value{font-size:40px;line-height:1.15;font-weight:600;letter-spacing:-.02em}#unit{font-size:16px;color:var(--muted)}#notice{max-width:52ch;font-size:14px;margin:0;color:var(--muted)}.graph-head{display:flex;align-items:center;justify-content:space-between;gap:16px;border-top:1px solid var(--line);padding-top:20px}h2{font-size:18px;font-weight:600;margin:0}#held{font-size:14px;font-weight:400;color:var(--muted)}select,input,button{font:inherit;color:inherit;border:1px solid #8a978c;border-radius:4px;min-height:44px;padding:8px 14px;background:transparent}button{cursor:pointer;font-weight:500}button:hover:not(:disabled),summary:hover{background:#e8ece6}button:active:not(:disabled){background:#dae1d8}button:disabled,select:disabled{color:#657166;background:#edf0e9;border-color:var(--line);cursor:default}#pause{background:var(--ink);border-color:var(--ink);color:var(--paper)}#pause:hover{background:#3c4940}#pause:active{background:#59645c}:focus-visible{outline:3px solid var(--focus);outline-offset:3px}::selection{background:#d3e0d5;color:var(--ink)}input{caret-color:var(--signal);width:130px;font-variant-numeric:tabular-nums}a{color:var(--signal);text-underline-offset:4px}select{max-width:160px;font-size:14px}#demo-note{font-size:14px;color:var(--warn);margin:10px 0 0}.canvas-wrap{position:relative;height:310px;margin:20px 0 0}canvas{width:100%;height:100%;display:block}#empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);pointer-events:none;text-align:center;padding:24px}.meta{display:flex;gap:8px 24px;flex-wrap:wrap;padding:12px 0;color:var(--muted);font-size:13px;border-bottom:1px solid var(--line);font-variant-numeric:tabular-nums}.meta span:empty{display:none}.actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:20px 0 24px}#display{margin-left:auto;border-color:transparent;color:var(--muted)}#feedback{color:var(--signal);margin:0 0 20px;overflow-wrap:anywhere}#feedback:empty{display:none}details{border-top:1px solid var(--line)}summary{cursor:pointer;min-height:56px;padding:14px 0;font-weight:500}details[open]{padding-bottom:20px}.setting-row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px 32px;padding:16px 0}.setting-row+.setting-row{border-top:1px solid var(--line)}h3{font-size:16px;margin:0 0 6px;font-weight:600}p{margin:0 0 12px;max-width:70ch;color:var(--muted)}.setting-row p{margin:0;font-size:14px;max-width:52ch}.reference-controls{display:flex;align-items:end;gap:12px;flex-wrap:wrap}label{display:block;font-size:14px;margin-bottom:6px}#help p{font-size:14px;margin:8px 0 16px}footer{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:16px;margin-top:4px;color:var(--muted);font-size:13px}
+@media(max-width:600px){main{padding:20px 18px}header{padding-bottom:16px}h1{font-size:20px}h1 span{display:block;font-size:13px;margin:0}.readout{display:block;padding:20px 0}.reading{margin-bottom:12px}#value{font-size:36px}.graph-head{padding-top:16px;gap:8px}h2{font-size:16px}select{max-width:130px}.canvas-wrap{height:240px;margin-top:16px}.meta{gap:4px 16px}.actions{gap:8px;margin:16px 0 24px}button{padding:8px 12px;font-size:15px}#display{margin-left:0}.setting-row{grid-template-columns:1fr;gap:12px}.setting-row>button{justify-self:start}.reference-controls{align-items:end}.graph-head h2{max-width:60%}}
 </style></head><body><main>
-<header><div class="brand">이퀄 <small>EQUALIZATION TOOL · HX710B</small></div><span class="pill" id="connection">연결 중</span></header>
-<h1>현재 측정값</h1><div class="reading"><span id="value">—</span><small id="unit">RAW</small></div><div class="note" id="notice" role="status">기기 상태를 확인하고 있습니다.</div>
-<section class="panel"><div class="graph-head"><strong>실시간 압력 <span id="held"></span></strong><select id="scale" aria-label="그래프 세로 범위"><option value="0">자동 범위</option><option value="2">2 kPa</option><option value="5">5 kPa</option><option value="10">10 kPa</option><option value="20">20 kPa</option><option value="40">40 kPa</option></select></div>
+<header><h1>이퀄 <span>압력 모니터</span></h1><span id="connection" role="status">연결 중</span></header>
+<section class="readout" aria-label="현재 측정"><div class="reading"><span class="label">현재 압력</span><strong id="value">—</strong><small id="unit">RAW</small></div><p id="notice" role="status">기기에 연결하고 있습니다.</p></section>
+<section aria-labelledby="graph-title"><div class="graph-head"><h2><span id="graph-title">압력 파형</span> <span id="held"></span></h2><select id="scale" aria-label="그래프 세로 범위"><option value="0">자동 범위</option><option value="2">2 kPa</option><option value="5">5 kPa</option><option value="10">10 kPa</option><option value="20">20 kPa</option><option value="40">40 kPa</option></select></div>
+<p id="demo-note" hidden>가압 · 유지 · 해제 예시. 실제 측정값이나 권장 압력이 아닙니다.</p>
 <div class="canvas-wrap"><canvas id="chart" aria-label="최근 20초 압력 그래프"></canvas><div id="empty">센서 데이터를 기다립니다</div></div>
-<div class="meta"><span>최근 20초 · 기기 시간 기준</span><span id="samples">0 samples</span><span id="peak">최댓값 —</span><span id="loss"></span></div>
-<div class="actions"><button id="pause">그래프 멈춤</button><button id="csv">CSV 저장</button><button id="display">OLED 확인</button></div></section>
+<div class="meta"><span id="timeline-label">최근 20초</span><span id="samples">0 samples</span><span id="peak">최댓값 —</span><span id="loss"></span></div>
+<div class="actions"><button id="pause" aria-pressed="false">그래프 멈춤</button><button id="csv">CSV 저장</button><button id="display">OLED 확인</button></div></section>
 <p id="feedback" role="status"></p>
-<div class="settings"><section class="panel"><div class="step">01 / ZERO</div><h2>사용 전 영점 맞추기</h2><p>호스를 대기에 열고 압력을 완전히 뺀 뒤 누르세요. 약 2초 동안 움직이지 마세요. 매 전원 켜기와 센서 재연결 후 필요합니다.</p><button class="primary" id="zero" disabled>대기압에서 영점 측정</button></section>
-<section class="panel"><div class="step">02 / CALIBRATION</div><h2>최초 기준 압력 교정</h2><p>영점을 먼저 맞춘 후 압력계로 확인한 일정한 양압을 가하세요. 입으로 만든 압력을 기준값으로 추정하지 마세요.</p><label for="reference">기준 압력 (kPa, 0.2–40)</label><input id="reference" type="number" min="0.2" max="40" step="0.1" value="2" inputmode="decimal"><div class="actions"><button id="calibrate" disabled>이 기준 압력으로 교정</button></div></section></div>
-<details><summary>연결과 측정 안내</summary><p>Wi-Fi <b>EQ-C3</b> · 비밀번호 <b>eqtest32</b> · <a href="http://192.168.4.1">http://192.168.4.1</a>. 인터넷 없는 Wi-Fi 연결을 유지하고 Android Chrome의 로컬 네트워크 권한을 허용하세요.</p><p>교정 전에는 ADC 원시값 또는 영점을 뺀 RAW가 표시됩니다. HX710B 압력 모드는 목표 40 samples/s이며 브라우저는 약 100 ms마다 묶어서 받습니다. 연결이 끊기거나 ADC가 포화하면 그래프 선이 끊깁니다. 음압과 40 kPa 초과는 이 모듈의 검증 범위가 아닙니다. 표시 범위는 사람에게 권장하는 압력이 아닙니다.</p></details>
-<footer>기기 내부에서 동작 · 외부 서버 없이 로컬 연결 · v1.0</footer>
+<details id="settings"><summary>영점 · 압력 교정</summary>
+<section class="setting-row"><div><h3>영점 맞추기</h3><p>호스를 대기에 열고 압력을 빼주세요. 약 2초 동안 움직이지 마세요. 전원을 켜거나 센서를 다시 연결할 때 필요합니다.</p></div><button id="zero" disabled>영점 측정</button></section>
+<section class="setting-row"><div><h3>기준 압력 교정</h3><p>영점을 맞춘 후 압력계로 확인한 일정한 양압을 가하세요. 입으로 만든 압력을 기준값으로 추정하지 마세요.</p></div><div class="reference-controls"><div><label for="reference">기준 압력 (kPa)</label><input id="reference" type="number" min="0.2" max="40" step="0.1" value="2" inputmode="decimal"></div><button id="calibrate" disabled>교정하기</button></div></section>
+</details>
+<details id="help"><summary>연결과 측정 안내</summary><p>Wi-Fi <b>EQ-C3</b> · 비밀번호 <b>eqtest32</b> · <a href="http://192.168.4.1">http://192.168.4.1</a>. 인터넷 없는 Wi-Fi 연결을 유지하고 Android Chrome의 로컬 네트워크 권한을 허용하세요.</p><p>교정 전에는 센서 원시값(RAW)을 표시합니다. 영점과 기준 압력 교정을 마치면 kPa로 바뀝니다. 연결 오류나 센서 포화 구간은 선을 끊어 표시합니다. CSV는 화면에 표시된 최근 20초만 저장합니다.</p><p>기준 압력 입력은 0.2–40 kPa입니다. 음압과 40 kPa 초과는 이 모듈의 검증 범위가 아닙니다. 표시 범위는 사람에게 권장하는 압력이 아닙니다.</p></details>
+<footer><span>EQ-C3 · 로컬 연결</span><span>v1.1</span></footer>
 </main><script>
 'use strict';
 const $=id=>document.getElementById(id), canvas=$('chart'), ctx=canvas.getContext('2d');
+/* DEMO_PATTERN_START */
+const demoPattern = {"id":"equalization-pulses-v1","periodMs":12000,"points":[[0,0],[600,0],[700,8],[800,65],[900,74],[1050,72],[1200,70],[1320,7],[1450,0],[2000,0],[2080,8],[2180,82],[2300,88],[2420,86],[2550,9],[2700,0],[3250,0],[3330,11],[3420,75],[3550,82],[3700,78],[3820,7],[3950,0],[4500,0],[4580,12],[4680,87],[4800,90],[4920,87],[5060,12],[5200,0],[5350,0],[5430,11],[5530,81],[5660,84],[5780,78],[5920,8],[6070,0],[7000,0],[7120,12],[7240,68],[7380,72],[7800,71],[8200,74],[8600,72],[9000,70],[9400,71],[9750,68],[9910,10],[10050,0],[12000,0]]};
+/* DEMO_PATTERN_END */
 let state=null, points=[], frozen=null, cursor=0, boot='', revision=0, connected=false, lost=0, lastReceive=0, epoch=0;
 const messages={idle:'',collecting:'측정 중입니다. 압력을 일정하게 유지하세요.',zero_ok:'영점 측정을 완료했습니다.',calibration_ok:'교정 계수를 기기에 저장했습니다.',unstable:'압력이 흔들렸습니다. 일정하게 유지한 뒤 다시 측정하세요.',sensor_error:'센서 상태가 바뀌어 측정을 중단했습니다.',timeout:'측정 시간이 초과되었습니다.',reference_too_small:'영점과 기준 압력의 차이가 너무 작습니다.',cancelled:'측정을 취소했습니다.',storage_error:'교정은 적용됐지만 저장에 실패했습니다. 재부팅 전에 다시 교정하세요.'};
 function isValid(p,s){return p[2]!==null&&!(p[4]&43)&&(s.calibrated?p[3]!==null:true)}
 function valueOf(p,s){return s.calibrated?p[3]:p[2]-(s.zero_valid?s.zero:0)}
+function demoActive(){return Boolean(state&&!state.online&&connected&&performance.now()-lastReceive<=2500)}
+function demoValueAt(time){
+ const phase=((time%demoPattern.periodMs)+demoPattern.periodMs)%demoPattern.periodMs,knots=demoPattern.points;
+ for(let i=1;i<knots.length;i++)if(phase<=knots[i][0]){const a=knots[i-1],b=knots[i];return a[1]+(b[1]-a[1])*(phase-a[0])/(b[0]-a[0]);}
+ return 0;
+}
+function plotView(){
+ if(!demoActive())return {demo:false,state:state||{calibrated:false,zero_valid:false},points};
+ // Display-only samples. Never append them to acquired points or export them as readings.
+ const end=Math.floor((state.ms+epoch+Math.max(0,performance.now()-lastReceive))/25),data=[];
+ for(let i=end-800;i<=end;i++)data.push([i,i*25,demoValueAt(i*25),null,0]);
+ return {demo:true,state:{calibrated:false,zero_valid:false},points:data};
+}
+function resumeGraph(){frozen=null;$('pause').setAttribute('aria-pressed','false');$('pause').textContent='그래프 멈춤';$('held').textContent='';}
 function updateStatus(){
  if(!state)return;
  const s=state, stale=!connected||performance.now()-lastReceive>2500;
- $('connection').textContent=stale?'연결 끊김':'기기 연결됨';$('connection').style.color=stale?'var(--warn)':'var(--mint)';
+ $('connection').textContent=stale?'연결 끊김':'기기 연결됨';$('connection').style.color=stale?'var(--warn)':'var(--signal)';
  $('unit').textContent=s.calibrated?'kPa':(s.zero_valid?'RAW Δ':'RAW');
  const invalid=stale||!s.online||Boolean(s.flags&43)||s.job!=='idle';
  const v=s.calibrated?s.pressure:s.raw-(s.zero_valid?s.zero:0);
  $('value').textContent=invalid||v===null?'—':(s.calibrated?v.toFixed(2):Math.round(v).toLocaleString());
- $('notice').textContent=stale?'EQ-C3 연결과 브라우저의 로컬 네트워크 권한을 확인하세요.':!s.online?'센서 연결 대기 · OUT → GPIO4 / SCK → GPIO3':s.flags&2?'ADC 포화 · 압력을 해제하고 배선을 확인하세요.':s.job!=='idle'?`측정 중 ${s.collected} / 80`:s.flags&32?'측정값 일부 누락 · 다음 측정값을 기다립니다.':!s.zero_valid?'호스를 대기에 열고 영점을 맞춰주세요.':!s.gain_valid?'기준 압력 교정 전입니다. 현재는 RAW 그래프입니다.':s.flags&16?'양압 0–40 kPa 밖의 값 · 이 센서의 유효 범위는 별도 검증이 필요합니다.':'교정 적용됨 · 양압 측정';
+ $('notice').textContent=stale?'EQ-C3 연결과 브라우저의 로컬 네트워크 권한을 확인하세요.':!s.online?'센서 미연결 · 샘플 표시 중. 연결하면 실제 측정으로 전환됩니다.':s.flags&2?'ADC 포화 · 압력을 해제하고 배선을 확인하세요.':s.job!=='idle'?`측정 중 ${s.collected} / 80`:s.flags&32?'측정값 일부 누락 · 다음 측정값을 기다립니다.':!s.zero_valid?'호스를 대기에 열고 영점을 맞춰주세요.':!s.gain_valid?'기준 압력 교정 전입니다. 현재는 RAW 그래프입니다.':s.flags&16?'양압 0–40 kPa 밖의 값 · 이 센서의 유효 범위는 별도 검증이 필요합니다.':'교정 적용됨 · 양압 측정';
  $('zero').disabled=stale||!s.online||s.job!=='idle'||Boolean(s.flags&3);
  $('calibrate').disabled=$('zero').disabled||!s.zero_valid;
  if(s.result!==updateStatus.lastResult){$('feedback').textContent=messages[s.result]??s.result;updateStatus.lastResult=s.result;}
 }
 function ingest(d){
  const s=d.status,key=s.boot+':'+s.revision;
- if(key!==boot+':'+revision){points=[];frozen=null;cursor=0;epoch=0;boot=s.boot;revision=s.revision;lost=0;$('pause').textContent='그래프 멈춤';$('held').textContent='';}
+ if(key!==boot+':'+revision){points=[];resumeGraph();cursor=0;epoch=0;boot=s.boot;revision=s.revision;lost=0;}
+ if(state&&state.online!==s.online){points=[];resumeGraph();}
  state=s;lost+=d.lost||0;
  for(const p of d.samples){
    if(p[0]<=cursor)continue;
@@ -61,22 +84,29 @@ function draw(){
  const box=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
  if(canvas.width!==Math.round(box.width*dpr)||canvas.height!==Math.round(box.height*dpr)){canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);}
  ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height;ctx.clearRect(0,0,w,h);
- const s=state||{calibrated:false,zero_valid:false},data=frozen||points,good=data.filter(p=>isValid(p,s));
+ if(frozen?.demo&&!demoActive())resumeGraph();
+ const view=frozen||plotView(),s=view.state,data=view.points,demo=view.demo,good=data.filter(p=>isValid(p,s));
+ canvas.dataset.mode=demo?'demo':'live';$('graph-title').textContent=demo?'샘플 압력 패턴':'압력 파형';
+ canvas.setAttribute('aria-label',demo?'최근 20초 이퀄 가압·유지·해제 샘플 그래프, 상대 압력 %':'최근 20초 압력 그래프');
+ $('demo-note').hidden=!demo;$('scale').disabled=demo||!s.calibrated;
+ $('csv').disabled=demo||!good.length;
+ $('timeline-label').textContent='최근 20초';
  let lo=s.calibrated?0:-100,hi=s.calibrated?1:100;
  if(good.length){lo=Math.min(0,...good.map(p=>valueOf(p,s)));hi=Math.max(0,...good.map(p=>valueOf(p,s)));const pad=Math.max((hi-lo)*.12,s.calibrated?.2:100);lo-=pad;hi+=pad;}
  if(s.calibrated&&Number($('scale').value)){hi=Number($('scale').value);lo=-hi*.1;}
- const left=s.calibrated?43:62,right=w-8,top=10,bottom=h-26;
- ctx.font='11px system-ui';ctx.lineWidth=1;
- for(let i=0;i<5;i++){const y=top+(bottom-top)*i/4,v=hi-(hi-lo)*i/4;ctx.strokeStyle='#28414a';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.fillStyle='#9eb5be';ctx.textAlign='right';ctx.fillText(s.calibrated?v.toFixed(1):Math.round(v).toLocaleString(),left-7,y+4);}
+ if(demo){lo=0;hi=100;}
+ const left=s.calibrated?43:62,right=w-8,top=10,bottom=h-28;
+ ctx.font='12px system-ui';ctx.lineWidth=1;
+ for(let i=0;i<5;i++){const y=top+(bottom-top)*i/4,v=hi-(hi-lo)*i/4;ctx.strokeStyle='#d8ded6';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.fillStyle='#59645c';ctx.textAlign='right';ctx.fillText(demo?Math.round(v)+'%':s.calibrated?v.toFixed(1):Math.round(v).toLocaleString(),left-7,y+4);}
  for(let i=0;i<5;i++){ctx.textAlign=i===4?'right':'left';ctx.fillText(i===4?'현재':`${-20+i*5}s`,left+(right-left)*i/4,h-5);}
  const end=data.length?data[data.length-1][1]:0;
- ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);ctx.clip();ctx.strokeStyle='#73efc5';ctx.lineWidth=1.8;ctx.beginPath();let prev=null;
+ ctx.save();ctx.beginPath();ctx.rect(left,top-1,right-left,bottom-top+2);ctx.clip();ctx.strokeStyle=demo?'#995019':'#235e47';ctx.lineWidth=1.8;ctx.beginPath();let prev=null;
  for(const p of data){if(!isValid(p,s)){prev=null;continue;}const x=right-(end-p[1])/20000*(right-left),y=bottom-(valueOf(p,s)-lo)/(hi-lo)*(bottom-top);
    if(!prev||p[0]!==prev[0]+1||p[1]-prev[1]>150)ctx.moveTo(x,y);else ctx.lineTo(x,y);prev=p;
  }ctx.stroke();ctx.restore();
  $('empty').style.display=good.length?'none':'grid';$('empty').textContent=!connected?'기기 연결을 기다립니다':s.online?'유효한 측정값을 기다립니다':'센서 연결 대기';
- $('samples').textContent=`${good.length} samples`;$('peak').textContent=good.length?`최댓값 ${Math.max(...good.map(p=>valueOf(p,s))).toFixed(s.calibrated?2:0)} ${s.calibrated?'kPa':'RAW'}`:'최댓값 —';
- $('loss').textContent=lost?`${lost}개 누락`:(s.dropped?`ADC 큐 누락 ${s.dropped}개`:'');
+ $('samples').textContent=demo?'12초 반복':`${good.length} samples`;$('peak').textContent=demo?'상대 압력 (%)':good.length?`최댓값 ${Math.max(...good.map(p=>valueOf(p,s))).toFixed(s.calibrated?2:0)} ${s.calibrated?'kPa':'RAW'}`:'최댓값 —';
+ $('loss').textContent=demo?'':lost?`${lost}개 누락`:(s.dropped?`ADC 큐 누락 ${s.dropped}개`:'');
 }
 async function command(action,extra={}){
  try{const r=await fetch('/api/control',{method:'POST',body:new URLSearchParams({action,...extra}),signal:AbortSignal.timeout(2500)});const d=await r.json();if(!r.ok)throw Error(d.error||'명령 실패');$('feedback').textContent=d.message||'명령을 전달했습니다.';}
@@ -85,8 +115,8 @@ async function command(action,extra={}){
 $('zero').onclick=()=>{if(confirm('호스를 대기에 열고 압력을 완전히 해제했나요?'))command('zero');};
 $('calibrate').onclick=()=>{const p=Number($('reference').value);if(!Number.isFinite(p)||p<.2||p>40){$('feedback').textContent='기준 압력은 0.2–40 kPa 범위로 입력하세요.';return;}if(confirm(`기준 압력계에서 ${p} kPa를 확인했나요? 약 2초간 일정하게 유지하세요.`))command('calibrate',{kpa:String(p)});};
 $('display').onclick=()=>command('display');
-$('pause').onclick=()=>{frozen=frozen?null:points.map(p=>p.slice());$('pause').textContent=frozen?'그래프 재개':'그래프 멈춤';$('held').textContent=frozen?'· 일시정지':'';draw();};
+$('pause').onclick=()=>{if(frozen)resumeGraph();else{const view=plotView();frozen={...view,state:{...view.state},points:view.points.map(p=>p.slice())};$('pause').textContent='그래프 재개';$('held').textContent='· 일시정지';$('pause').setAttribute('aria-pressed','true');}draw();};
 $('scale').onchange=draw;
-$('csv').onclick=()=>{const data=frozen||points;const rows=['sequence,device_ms,raw,pressure_kpa,flags,boot,revision',...data.map(p=>[...p.map(v=>v===null?'':v),boot,revision].join(','))];const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='equalization-'+Date.now()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
-new ResizeObserver(draw).observe(canvas);setInterval(updateStatus,500);poll();
+$('csv').onclick=()=>{if(demoActive()||frozen?.demo)return;const data=frozen?.points||points;const rows=['sequence,device_ms,raw,pressure_kpa,flags,boot,revision',...data.map(p=>[...p.map(v=>v===null?'':v),boot,revision].join(','))];const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='equalization-'+Date.now()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+new ResizeObserver(draw).observe(canvas);setInterval(()=>{updateStatus();draw();},500);setInterval(()=>{if(demoActive()&&!frozen)draw();},50);poll();
 </script></body></html>
