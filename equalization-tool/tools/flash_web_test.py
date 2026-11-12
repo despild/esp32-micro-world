@@ -22,6 +22,7 @@ def main():
     p.add_argument('--port',required=True)
     p.add_argument('--backup',required=True,type=Path)
     p.add_argument('--build',type=Path,default=ROOT/'build/WebQrTest')
+    p.add_argument('--sketch',choices=['WebQrTest','EqualizationTool'],default='WebQrTest')
     args=p.parse_args()
     backup=args.backup.read_bytes()
     meta=json.loads(args.backup.with_suffix('.json').read_text(encoding='utf-8'))
@@ -29,8 +30,8 @@ def main():
         raise SystemExit('Full backup missing or checksum mismatch')
     if args.port != meta['port']:
         raise SystemExit('Backup was made from another port; confirm the target device first')
-    image=args.build/'WebQrTest.ino.bin'
-    layout=args.build/'WebQrTest.ino.partitions.bin'
+    image=args.build/f'{args.sketch}.ino.bin'
+    layout=args.build/f'{args.sketch}.ino.partitions.bin'
     expected=partitions(backup[0x8000:0x9000])
     actual=partitions(layout.read_bytes())
     if actual!=expected:

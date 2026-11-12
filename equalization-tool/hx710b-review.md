@@ -1,5 +1,7 @@
 # HX710B 압력 모듈 검토
 
+구현 업데이트: 아래 검토를 반영한 [이퀄툴 펌웨어](firmware/EqualizationTool/README.md)를 추가했습니다. 예제 라이브러리 대신 전용 비차단 드라이버를 사용하며, 실제 센서 연결과 압력 교정 시험은 남아 있습니다. [부품·배선](wiring-and-parts.md)
+
 2026-11-11. 사용자가 [이 Reddit 게시글](https://www.reddit.com/r/arduino/comments/170elpd/need_help_for_the_hx710b_pressure_sensor/)에서 사용하는 센서와 같은 모듈이라고 확인했습니다. 게시글이 연결한 라이브러리는 **MPS20N0040D 압력 소자 + HX710B ADC**를 대상으로 합니다. 이 조합을 **저비용 양압 시제품의 우선 검증 대상**으로 삼되, 음압 측정과 전체 유효 범위는 교정 시험 전 확정하지 않습니다.
 
 라이브러리의 예전 `kurimawxx00` 주소는 현재 `rppelayo` 저장소로 연결됩니다. 부품군 식별은 사용자 설명과 [작성자의 README](https://github.com/rppelayo/hx710B_pressure_sensor/blob/ef8baf33960617da41deeddc3be5cb52667ba668/README.md)에 근거합니다. 실물 센서의 제조사·접미 품번·기판 회로까지 사진으로 대조한 것은 아닙니다. 앞선 Google 광고 URL의 판매처와 아래 에듀이노 판매 예시가 동일하다는 의미도 아닙니다.

@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#101c22"><title>이퀄 · 실시간 압력</title>
+<style>
+:root{color-scheme:dark;--bg:#0c151b;--panel:#13232b;--line:#28414a;--muted:#9eb5be;--mint:#73efc5;--warn:#ffd28a}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:#eff9f8;font:15px/1.6 system-ui,sans-serif}main{max-width:1000px;margin:auto;padding:28px 20px 44px}header{display:flex;justify-content:space-between;align-items:center;gap:12px}.brand{font-size:20px;font-weight:750;letter-spacing:-.7px}.brand small{font-size:12px;font-weight:500;color:var(--muted);margin-left:10px}.pill{font-size:12px;border:1px solid var(--line);border-radius:30px;padding:5px 11px;color:var(--mint)}h1{font-size:15px;font-weight:500;color:var(--muted);margin:28px 0 0}.reading{font-size:64px;font-variant-numeric:tabular-nums;line-height:1.3;letter-spacing:-3px;font-weight:650;overflow-wrap:anywhere}.reading small{font-size:19px;letter-spacing:0;color:var(--muted);padding-left:12px}.note{color:var(--warn);min-height:26px;margin-bottom:22px}.panel{border:1px solid var(--line);border-radius:20px;background:var(--panel);padding:20px;margin-top:18px}.graph-head{display:flex;align-items:center;justify-content:space-between;gap:12px}.graph-head strong{font-weight:600}select,input,button{font:inherit;color:inherit;background:#1a303a;border:1px solid #36515a;border-radius:10px;padding:9px 12px;min-height:44px}button{cursor:pointer}button:hover{border-color:var(--mint)}button:disabled{opacity:.4;cursor:default}button.primary{color:#0b2a23;background:var(--mint);border-color:var(--mint);font-weight:650}.canvas-wrap{position:relative;height:270px;margin-top:16px}canvas{width:100%;height:100%;display:block}#empty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);pointer-events:none;text-align:center;padding:30px}.meta{display:flex;flex-wrap:wrap;gap:8px 24px;color:var(--muted);font-size:12px;margin-top:10px}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}h2{font-size:17px;margin:0 0 10px}p{color:var(--muted);margin:8px 0 14px}.settings{display:grid;grid-template-columns:1fr 1fr;gap:18px}.settings .panel{margin-top:0}label{display:block;font-size:13px;margin:12px 0 6px}input{width:100%;max-width:220px}details{margin-top:20px;color:var(--muted)}summary{cursor:pointer}#feedback{color:var(--mint);min-height:26px;overflow-wrap:anywhere}footer{color:var(--muted);font-size:12px;margin-top:22px}.step{color:var(--mint);font-size:11px;letter-spacing:2px}a{color:var(--mint)}@media(max-width:600px){main{padding:20px 14px 32px}.panel{padding:16px;border-radius:16px}.settings{grid-template-columns:1fr}.reading{font-size:50px;letter-spacing:-2px}.canvas-wrap{height:240px}.brand small{display:block;margin:0}.graph-head{align-items:flex-start}.graph-head select{max-width:150px;font-size:13px}}
+</style></head><body><main>
+<header><div class="brand">이퀄 <small>EQUALIZATION TOOL · HX710B</small></div><span class="pill" id="connection">연결 중</span></header>
+<h1>현재 측정값</h1><div class="reading"><span id="value">—</span><small id="unit">RAW</small></div><div class="note" id="notice" role="status">기기 상태를 확인하고 있습니다.</div>
+<section class="panel"><div class="graph-head"><strong>실시간 압력 <span id="held"></span></strong><select id="scale" aria-label="그래프 세로 범위"><option value="0">자동 범위</option><option value="2">2 kPa</option><option value="5">5 kPa</option><option value="10">10 kPa</option><option value="20">20 kPa</option><option value="40">40 kPa</option></select></div>
+<div class="canvas-wrap"><canvas id="chart" aria-label="최근 20초 압력 그래프"></canvas><div id="empty">센서 데이터를 기다립니다</div></div>
+<div class="meta"><span>최근 20초 · 기기 시간 기준</span><span id="samples">0 samples</span><span id="peak">최댓값 —</span><span id="loss"></span></div>
+<div class="actions"><button id="pause">그래프 멈춤</button><button id="csv">CSV 저장</button><button id="display">OLED 확인</button></div></section>
+<p id="feedback" role="status"></p>
+<div class="settings"><section class="panel"><div class="step">01 / ZERO</div><h2>사용 전 영점 맞추기</h2><p>호스를 대기에 열고 압력을 완전히 뺀 뒤 누르세요. 약 2초 동안 움직이지 마세요. 매 전원 켜기와 센서 재연결 후 필요합니다.</p><button class="primary" id="zero" disabled>대기압에서 영점 측정</button></section>
+<section class="panel"><div class="step">02 / CALIBRATION</div><h2>최초 기준 압력 교정</h2><p>영점을 먼저 맞춘 후 압력계로 확인한 일정한 양압을 가하세요. 입으로 만든 압력을 기준값으로 추정하지 마세요.</p><label for="reference">기준 압력 (kPa, 0.2–40)</label><input id="reference" type="number" min="0.2" max="40" step="0.1" value="2" inputmode="decimal"><div class="actions"><button id="calibrate" disabled>이 기준 압력으로 교정</button></div></section></div>
+<details><summary>연결과 측정 안내</summary><p>Wi-Fi <b>EQ-C3</b> · 비밀번호 <b>eqtest32</b> · <a href="http://192.168.4.1">http://192.168.4.1</a>. 인터넷 없는 Wi-Fi 연결을 유지하고 Android Chrome의 로컬 네트워크 권한을 허용하세요.</p><p>교정 전에는 ADC 원시값 또는 영점을 뺀 RAW가 표시됩니다. HX710B 압력 모드는 목표 40 samples/s이며 브라우저는 약 100 ms마다 묶어서 받습니다. 연결이 끊기거나 ADC가 포화하면 그래프 선이 끊깁니다. 음압과 40 kPa 초과는 이 모듈의 검증 범위가 아닙니다. 표시 범위는 사람에게 권장하는 압력이 아닙니다.</p></details>
+<footer>기기 내부에서 동작 · 외부 서버 없이 로컬 연결 · v1.0</footer>
+</main><script>
+'use strict';
+const $=id=>document.getElementById(id), canvas=$('chart'), ctx=canvas.getContext('2d');
+let state=null, points=[], frozen=null, cursor=0, boot='', revision=0, connected=false, lost=0, lastReceive=0, epoch=0;
+const messages={idle:'',collecting:'측정 중입니다. 압력을 일정하게 유지하세요.',zero_ok:'영점 측정을 완료했습니다.',calibration_ok:'교정 계수를 기기에 저장했습니다.',unstable:'압력이 흔들렸습니다. 일정하게 유지한 뒤 다시 측정하세요.',sensor_error:'센서 상태가 바뀌어 측정을 중단했습니다.',timeout:'측정 시간이 초과되었습니다.',reference_too_small:'영점과 기준 압력의 차이가 너무 작습니다.',cancelled:'측정을 취소했습니다.',storage_error:'교정은 적용됐지만 저장에 실패했습니다. 재부팅 전에 다시 교정하세요.'};
+function isValid(p,s){return p[2]!==null&&!(p[4]&43)&&(s.calibrated?p[3]!==null:true)}
+function valueOf(p,s){return s.calibrated?p[3]:p[2]-(s.zero_valid?s.zero:0)}
+function updateStatus(){
+ if(!state)return;
+ const s=state, stale=!connected||performance.now()-lastReceive>2500;
+ $('connection').textContent=stale?'연결 끊김':'기기 연결됨';$('connection').style.color=stale?'var(--warn)':'var(--mint)';
+ $('unit').textContent=s.calibrated?'kPa':(s.zero_valid?'RAW Δ':'RAW');
+ const invalid=stale||!s.online||Boolean(s.flags&43)||s.job!=='idle';
+ const v=s.calibrated?s.pressure:s.raw-(s.zero_valid?s.zero:0);
+ $('value').textContent=invalid||v===null?'—':(s.calibrated?v.toFixed(2):Math.round(v).toLocaleString());
+ $('notice').textContent=stale?'EQ-C3 연결과 브라우저의 로컬 네트워크 권한을 확인하세요.':!s.online?'센서 연결 대기 · OUT → GPIO4 / SCK → GPIO3':s.flags&2?'ADC 포화 · 압력을 해제하고 배선을 확인하세요.':s.job!=='idle'?`측정 중 ${s.collected} / 80`:s.flags&32?'측정값 일부 누락 · 다음 측정값을 기다립니다.':!s.zero_valid?'호스를 대기에 열고 영점을 맞춰주세요.':!s.gain_valid?'기준 압력 교정 전입니다. 현재는 RAW 그래프입니다.':s.flags&16?'양압 0–40 kPa 밖의 값 · 이 센서의 유효 범위는 별도 검증이 필요합니다.':'교정 적용됨 · 양압 측정';
+ $('zero').disabled=stale||!s.online||s.job!=='idle'||Boolean(s.flags&3);
+ $('calibrate').disabled=$('zero').disabled||!s.zero_valid;
+ if(s.result!==updateStatus.lastResult){$('feedback').textContent=messages[s.result]??s.result;updateStatus.lastResult=s.result;}
+}
+function ingest(d){
+ const s=d.status,key=s.boot+':'+s.revision;
+ if(key!==boot+':'+revision){points=[];frozen=null;cursor=0;epoch=0;boot=s.boot;revision=s.revision;lost=0;$('pause').textContent='그래프 멈춤';$('held').textContent='';}
+ state=s;lost+=d.lost||0;
+ for(const p of d.samples){
+   if(p[0]<=cursor)continue;
+   // Extend the device's unsigned 32-bit milliseconds across its 49.7-day wrap.
+   const previous=points[points.length-1];
+   if(previous && p[1]+epoch<previous[1]-2147483648)epoch+=4294967296;
+   points.push([p[0],p[1]+epoch,p[2],p[3],p[4]]);cursor=p[0];
+ }
+ cursor=Math.max(cursor,d.next);
+ if(points.length){const cutoff=points[points.length-1][1]-20000;while(points.length&&points[0][1]<cutoff)points.shift();}
+ connected=true;lastReceive=performance.now();updateStatus();draw();
+}
+async function poll(){
+ let delay=100;
+ try{
+   const r=await fetch(`/api/samples?after=${cursor}&boot=${encodeURIComponent(boot)}&revision=${revision}`,{cache:'no-store',signal:AbortSignal.timeout(2200)});
+   if(!r.ok)throw Error('HTTP '+r.status);const d=await r.json();ingest(d);if(d.more)delay=10;
+ }catch(e){connected=false;updateStatus();draw();delay=1000;}
+ setTimeout(poll,document.hidden?Math.max(delay,1000):delay);
+}
+function draw(){
+ const box=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+ if(canvas.width!==Math.round(box.width*dpr)||canvas.height!==Math.round(box.height*dpr)){canvas.width=Math.round(box.width*dpr);canvas.height=Math.round(box.height*dpr);}
+ ctx.setTransform(dpr,0,0,dpr,0,0);const w=box.width,h=box.height;ctx.clearRect(0,0,w,h);
+ const s=state||{calibrated:false,zero_valid:false},data=frozen||points,good=data.filter(p=>isValid(p,s));
+ let lo=s.calibrated?0:-100,hi=s.calibrated?1:100;
+ if(good.length){lo=Math.min(0,...good.map(p=>valueOf(p,s)));hi=Math.max(0,...good.map(p=>valueOf(p,s)));const pad=Math.max((hi-lo)*.12,s.calibrated?.2:100);lo-=pad;hi+=pad;}
+ if(s.calibrated&&Number($('scale').value)){hi=Number($('scale').value);lo=-hi*.1;}
+ const left=s.calibrated?43:62,right=w-8,top=10,bottom=h-26;
+ ctx.font='11px system-ui';ctx.lineWidth=1;
+ for(let i=0;i<5;i++){const y=top+(bottom-top)*i/4,v=hi-(hi-lo)*i/4;ctx.strokeStyle='#28414a';ctx.beginPath();ctx.moveTo(left,y);ctx.lineTo(right,y);ctx.stroke();ctx.fillStyle='#9eb5be';ctx.textAlign='right';ctx.fillText(s.calibrated?v.toFixed(1):Math.round(v).toLocaleString(),left-7,y+4);}
+ for(let i=0;i<5;i++){ctx.textAlign=i===4?'right':'left';ctx.fillText(i===4?'현재':`${-20+i*5}s`,left+(right-left)*i/4,h-5);}
+ const end=data.length?data[data.length-1][1]:0;
+ ctx.save();ctx.beginPath();ctx.rect(left,top,right-left,bottom-top);ctx.clip();ctx.strokeStyle='#73efc5';ctx.lineWidth=1.8;ctx.beginPath();let prev=null;
+ for(const p of data){if(!isValid(p,s)){prev=null;continue;}const x=right-(end-p[1])/20000*(right-left),y=bottom-(valueOf(p,s)-lo)/(hi-lo)*(bottom-top);
+   if(!prev||p[0]!==prev[0]+1||p[1]-prev[1]>150)ctx.moveTo(x,y);else ctx.lineTo(x,y);prev=p;
+ }ctx.stroke();ctx.restore();
+ $('empty').style.display=good.length?'none':'grid';$('empty').textContent=!connected?'기기 연결을 기다립니다':s.online?'유효한 측정값을 기다립니다':'센서 연결 대기';
+ $('samples').textContent=`${good.length} samples`;$('peak').textContent=good.length?`최댓값 ${Math.max(...good.map(p=>valueOf(p,s))).toFixed(s.calibrated?2:0)} ${s.calibrated?'kPa':'RAW'}`:'최댓값 —';
+ $('loss').textContent=lost?`${lost}개 누락`:(s.dropped?`ADC 큐 누락 ${s.dropped}개`:'');
+}
+async function command(action,extra={}){
+ try{const r=await fetch('/api/control',{method:'POST',body:new URLSearchParams({action,...extra}),signal:AbortSignal.timeout(2500)});const d=await r.json();if(!r.ok)throw Error(d.error||'명령 실패');$('feedback').textContent=d.message||'명령을 전달했습니다.';}
+ catch(e){$('feedback').textContent='처리하지 못했습니다: '+e.message;}
+}
+$('zero').onclick=()=>{if(confirm('호스를 대기에 열고 압력을 완전히 해제했나요?'))command('zero');};
+$('calibrate').onclick=()=>{const p=Number($('reference').value);if(!Number.isFinite(p)||p<.2||p>40){$('feedback').textContent='기준 압력은 0.2–40 kPa 범위로 입력하세요.';return;}if(confirm(`기준 압력계에서 ${p} kPa를 확인했나요? 약 2초간 일정하게 유지하세요.`))command('calibrate',{kpa:String(p)});};
+$('display').onclick=()=>command('display');
+$('pause').onclick=()=>{frozen=frozen?null:points.map(p=>p.slice());$('pause').textContent=frozen?'그래프 재개':'그래프 멈춤';$('held').textContent=frozen?'· 일시정지':'';draw();};
+$('scale').onchange=draw;
+$('csv').onclick=()=>{const data=frozen||points;const rows=['sequence,device_ms,raw,pressure_kpa,flags,boot,revision',...data.map(p=>[...p.map(v=>v===null?'':v),boot,revision].join(','))];const url=URL.createObjectURL(new Blob(['\uFEFF'+rows.join('\r\n')],{type:'text/csv;charset=utf-8'}));const a=document.createElement('a');a.href=url;a.download='equalization-'+Date.now()+'.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+new ResizeObserver(draw).observe(canvas);setInterval(updateStatus,500);poll();
+</script></body></html>

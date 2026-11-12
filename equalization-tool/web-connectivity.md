@@ -1,8 +1,8 @@
 # ESP32 로컬 웹과 QR 접속 설계
 
-2026-11-11. ESP32가 Wi-Fi 접속점과 웹서버를 제공하고, 휴대폰에서 실시간 그래프를 보는 방안입니다. 현재 [WebQrTest](firmware/WebQrTest/README.md)를 보드에 올려 AP·QR 프레임버퍼·내부 HTTP 응답과 Android Chrome의 실제 웹 접속을 검증했습니다. 휴대폰 카메라의 작은 OLED QR 인식, 센서 취득·그래프·CSV·무선 ON/OFF 메뉴는 구현 전 또는 미검증입니다. BMP180과 포트형 센서는 향후 같은 웹 화면을 사용하도록 설계합니다.
+2026-11-11. 초기 [WebQrTest](firmware/WebQrTest/README.md)에서 AP·QR 프레임버퍼·내부 HTTP와 Android Chrome 접속을 확인했습니다. 이어 [HX710B 이퀄툴](firmware/EqualizationTool/README.md)에 센서 취득, 기본 OLED 그래프, 버튼 메뉴, 웹 실시간 그래프, 최근 20초 CSV, Wi-Fi ON/OFF를 구현했습니다. 실제 센서/버튼은 연결 전이며 카메라 QR 인식도 미검증입니다. 현재 구현 동작은 이퀄툴 가이드를 따르고 아래 내용은 초기 설계 비교로 봅니다.
 
-테스트 펌웨어는 부팅하면 AP를 켜고, 현재 압력 대신 연결 상태와 OLED 확인 버튼을 제공합니다. 아래 필요할 때만 켜는 방식은 완성품의 설계안입니다.
+연결 테스트 펌웨어는 압력 대신 연결 상태를 보여줍니다. 이퀄툴은 기본 그래프에서 시작하고, 버튼 연결 전 시험 편의를 위해 부팅 시 AP를 켭니다. 단독 측정 시 PHONE 메뉴에서 Wi-Fi를 끌 수 있습니다.
 
 ## 접속 흐름
 

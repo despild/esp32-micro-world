@@ -1,0 +1,121 @@
+{
+  "time_utc": "2026-11-12T09:01:09.453061+09:00",
+  "sensor_connected": false,
+  "status": {
+    "device": "ESP32-C3",
+    "firmware": "equalization-1.0",
+    "boot": "fa631e48",
+    "revision": 1,
+    "ms": 15817,
+    "ap": true,
+    "ip": "192.168.4.1",
+    "clients": 0,
+    "oled": true,
+    "adc_task": true,
+    "online": false,
+    "zero_valid": false,
+    "gain_valid": false,
+    "calibrated": false,
+    "zero": 0.0,
+    "raw": null,
+    "pressure": null,
+    "flags": 1,
+    "job": "idle",
+    "collected": 0,
+    "result": "idle",
+    "dropped": 0,
+    "requests": 0,
+    "screen": 0
+  },
+  "core_assertions": 20,
+  "qr_framebuffer": "PASS: Wi-Fi + web",
+  "menu_and_wifi_toggle": "PASS",
+  "http_loopback": [
+    {
+      "http_selftest": true,
+      "path": "/",
+      "bytes": 5961,
+      "expected": 5961
+    },
+    {
+      "http_selftest": true,
+      "path": "/api/status",
+      "bytes": 369,
+      "expected": 369
+    },
+    {
+      "http_selftest": true,
+      "path": "/api/samples",
+      "bytes": 1175,
+      "expected": 1175
+    }
+  ],
+  "final_status": {
+    "device": "ESP32-C3",
+    "firmware": "equalization-1.0",
+    "boot": "fa631e48",
+    "revision": 1,
+    "ms": 16860,
+    "ap": true,
+    "ip": "192.168.4.1",
+    "clients": 0,
+    "oled": true,
+    "adc_task": true,
+    "online": false,
+    "zero_valid": false,
+    "gain_valid": false,
+    "calibrated": false,
+    "zero": 0.0,
+    "raw": null,
+    "pressure": null,
+    "flags": 1,
+    "job": "idle",
+    "collected": 0,
+    "result": "sensor_error",
+    "dropped": 0,
+    "requests": 3,
+    "screen": 0
+  },
+  "binary_bytes": 1047584,
+  "binary_sha256": "97dd732af5db32885690f8cefe0a17a9aeeb665d17a008a9a8f7ee46a880c225",
+  "result": "PASS",
+  "limits": [
+    "Sensor and physical buttons not connected; ADC timing, pressure accuracy and physical wiring untested.",
+    "QR decoded from OLED framebuffer; phone camera scan not verified.",
+    "HTTP bytes verified by on-device TCP loopback; user separately confirmed final graph page over Wi-Fi.",
+    "SELFTEST runs an isolated model, not a sensor emulator or live-graph data source.",
+    "Rechargeable battery, charger, startup load, thermal behavior and simultaneous charging/measurement not physically verified."
+  ],
+  "browser_tests": {
+    "result": "PASS",
+    "checks": [
+      "embedded gzip matches source",
+      "missing sensor",
+      "RAW before calibration",
+      "zero POST",
+      "reference POST",
+      "calibrated graph",
+      "gap notice",
+      "pause/resume",
+      "mobile/desktop layout",
+      "CSV",
+      "saturation",
+      "disconnect",
+      "device reboot"
+    ],
+    "pageErrors": []
+  },
+  "phone_confirmation": {
+    "date": "2026-11-12",
+    "platform": "Android Chrome",
+    "user_confirmed": true,
+    "observation": "User confirmed the new graph page is visible over EQ-C3 Wi-Fi."
+  },
+  "build": {
+    "core": "esp32 3.1.1",
+    "fqbn": "esp32:esp32:esp32c3:CDCOnBoot=cdc,FlashSize=4M",
+    "app_partition_bytes": 1048576,
+    "free_app_bytes": 992,
+    "upload": "App only at 0x10000; esptool verified flash hash."
+  }
+}
